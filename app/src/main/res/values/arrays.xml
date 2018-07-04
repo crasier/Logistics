@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="main_tab_name">
+        <item>功能</item>
+        <item>资讯</item>
+        <item>我的</item>
+    </array>
+
+    <array name="dispatch_order_back">
+        <item>全部</item>
+        <item>是</item>
+        <item>否</item>
+    </array>
+
+    <array name="yes_or_no">
+        <item>是</item>
+        <item>否</item>
+    </array>
+</resources>

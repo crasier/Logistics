@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.inspur.eport.logistics">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
+    <application
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:name=".MyApplication"
+        android:theme="@style/AppTheme">
+        <activity android:name=".main.SplashActivity"
+            android:theme="@style/SplashTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".account.LoginActivity"
+                  android:theme="@style/TransTheme"
+                  android:screenOrientation="portrait"
+                  android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".main.MainActivity"
+                android:launchMode="singleTop"
+                  android:theme="@style/TransTheme"
+                  android:screenOrientation="portrait"
+                  android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".account.RegisterActivity"
+                  android:theme="@style/TransTheme"
+                  android:screenOrientation="portrait"
+                  android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".account.RetrieveActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+
+        <activity android:name=".functions.transport.TransportOrderManageActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|orientation"/>
+        <activity android:name=".functions.transport.TransportOrderDetailActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|orientation"/>
+        <activity android:name=".functions.dispatch.TransportOrderDispatchActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|orientation"/>
+        <activity android:name=".functions.dispatch.TransportOrderReturnActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|orientation"/>
+        <activity android:name=".functions.dispatch.DispatchOrderManageActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".functions.team.TruckTeamManageActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".functions.team.TeamAddActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".functions.truck.TruckManageActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".functions.truck.TruckAddActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".functions.driver.DriverManageActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".functions.driver.DriverAddActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".functions.order.OrderContainerActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+        <activity android:name=".functions.status.TransportStateActivity"
+            android:theme="@style/TransTheme"
+            android:screenOrientation="portrait"
+            android:configChanges="layoutDirection|keyboardHidden|orientation"/>
+    </application>
+
+</manifest>
