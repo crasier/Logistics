@@ -13,7 +13,7 @@
         android:textSize="@dimen/text_big"
         android:background="@color/colorPrimary"
         android:textColor="@color/white"/>
-    <com.inspur.eport.logistics.widgets.ChildGridView
+    <com.eport.logistics.widgets.ChildGridView
         android:id="@+id/parent_gridview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

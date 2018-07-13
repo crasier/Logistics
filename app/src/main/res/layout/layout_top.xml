@@ -13,7 +13,7 @@
         android:layout_gravity="center_vertical"
         tools:src="@drawable/icon_back"
         android:scaleType="center"/>
-    <com.inspur.eport.logistics.widgets.MarqueeTextView
+    <com.eport.logistics.widgets.MarqueeTextView
         android:id="@+id/base_top_title"
         android:layout_width="0dp"
         android:layout_height="match_parent"

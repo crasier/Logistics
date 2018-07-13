@@ -10,7 +10,7 @@
               android:orientation="vertical"
               android:padding="15dp">
 
-    <com.inspur.eport.logistics.widgets.AVLoadingIndicatorView
+    <com.eport.logistics.widgets.AVLoadingIndicatorView
         android:id="@+id/loading_avi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
