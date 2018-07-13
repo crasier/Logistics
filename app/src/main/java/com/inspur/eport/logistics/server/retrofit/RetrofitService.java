@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import io.reactivex.Observable;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.FormUrlEncoded;
@@ -20,8 +21,11 @@ public interface RetrofitService {
     /**
      * 登录
      * */
-    @GET("account/login")
-    public Observable<JSONObject> login(@Query("name") String name, @Query("pwd") String password);
+//    @GET("account/login")
+//    public Observable<JSONObject> login(@Query("name") String name, @Query("pwd") String password);
+
+    @GET
+    public Observable<String> login(@Url String url);
 
 //    @FormUrlEncoded
     @POST
@@ -29,7 +33,7 @@ public interface RetrofitService {
     /**
      * 请求的返回结果是jsonobject
      * */
-    public Observable<JSONObject> requestObj(@Header("Authorization") String token, @Url String url, @Body RequestBody body);
+    public Observable<JSONObject> requestObj(@Header("Cookie") String token, @Url String url, @Body RequestBody body);
 
 //    @FormUrlEncoded
     @POST
@@ -37,7 +41,7 @@ public interface RetrofitService {
     /**
      * 请求的返回结果是jsonarray
      * */
-    public Observable<JSONArray> requestArr(@Header("Authorization") String token, @Url String url, @Body RequestBody body);
+    public Observable<JSONArray> requestArr(@Header("Cookie") String token, @Url String url, @Body RequestBody body);
 
 
 //    @FormUrlEncoded
@@ -46,21 +50,21 @@ public interface RetrofitService {
     /**
      * 请求的返回结果是String
      * */
-    public Observable<String> requestStr(@Header("Authorization") String token, @Url String url, @Body RequestBody body);
+    public Observable<String> requestStr(@Header("Cookie") String token, @Url String url, @Body RequestBody body);
 //    @FormUrlEncoded
     @POST
     @Headers({"Content-Type: application/json","Accept: application/json"})
     /**
      * 请求的返回结果是String
      * */
-    public Observable<Boolean> requestBool(@Header("Authorization") String token, @Url String url, @Body RequestBody body);
+    public Observable<Boolean> requestBool(@Header("Cookie") String token, @Url String url, @Body RequestBody body);
 
     @POST
     @Headers({"Content-Type: application/json","Accept: application/json"})
     /**
      * 请求的返回结果没有响应body，只有header
      * */
-    public Observable<Response<Void>> requestNoBody(@Header("Authorization") String token, @Url String url, @Body RequestBody body);
+    public Observable<Response<Void>> requestNoBody(@Header("Cookie") String token, @Url String url, @Body RequestBody body);
 
 
 
@@ -86,6 +90,10 @@ public interface RetrofitService {
     @Headers({"Content-Type:application/json;charset=UTF-8","Accept:application/json"})
     public Observable<Void> getVoid(@Header("Cookie") String token, @Url String url);
 
+    @GET
+    @Headers({"Content-Type:application/json;charset=UTF-8","Accept:application/json"})
+    public Observable<ResponseBody> getBody(@Header("Cookie") String token, @Url String url);
+
     @POST
     @Headers({"Content-Type:application/json;charset=UTF-8","Accept:application/json"})
     public Observable<JSONArray> postArr(@Header("Cookie") String token, @Url String url, @Body RequestBody body);
@@ -102,4 +110,8 @@ public interface RetrofitService {
     @POST
     @Headers({"Content-Type:application/json;charset=UTF-8","Accept:application/json"})
     public Observable<Void> postVoid(@Header("Cookie") String token, @Url String url, @Body RequestBody body);
+
+    @POST
+    @Headers({"Content-Type:application/json;charset=UTF-8","Accept:application/json"})
+    public Observable<ResponseBody> postBody(@Header("Cookie") String token, @Url String url, @Body RequestBody body);
 }

@@ -132,7 +132,7 @@
         app:fabSize="normal"
         app:useCompatPadding="false"
         android:src="@drawable/icon_check"/>
-    <include layout="@layout/pop_check_order_transport"
+    <include layout="@layout/pop_check_dispatch"
         android:id="@+id/floating_window"
         android:visibility="gone"
         android:layout_width="match_parent"

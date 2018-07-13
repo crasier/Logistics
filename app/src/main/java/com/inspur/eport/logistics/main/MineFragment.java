@@ -1,19 +1,26 @@
 package com.inspur.eport.logistics.main;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
+import android.webkit.ValueCallback;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.inspur.eport.logistics.BaseFragment;
+import com.inspur.eport.logistics.Constants;
 import com.inspur.eport.logistics.R;
 import com.inspur.eport.logistics.account.LoginActivity;
+import com.inspur.eport.logistics.account.WebLoginActivity;
 import com.inspur.eport.logistics.bean.User;
 import com.inspur.eport.logistics.utils.MyToast;
+import com.inspur.eport.logistics.utils.Prefer;
 import com.inspur.eport.logistics.utils.Tools;
 
 import butterknife.BindView;
@@ -68,8 +75,22 @@ public class MineFragment extends BaseFragment {
                     break;
                 case R.id.mine_feedback:
                     MyToast.show(mActivity, "意见反馈");
+                    User.getUser().setToken("123123123reqwerqe");
                     break;
                 case R.id.mine_logout:
+                    Prefer.getInstance().putString(Constants.KEY_PREFER_TOKEN, "");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+                            @Override
+                            public void onReceiveValue(Boolean value) {
+
+                            }
+                        });
+                    }else {
+                        CookieManager.getInstance().removeAllCookie();
+                    }
+
+//                    startActivity(new Intent(mActivity, WebLoginActivity.class));
                     startActivity(new Intent(mActivity, LoginActivity.class));
                     mActivity.finish();
                     break;

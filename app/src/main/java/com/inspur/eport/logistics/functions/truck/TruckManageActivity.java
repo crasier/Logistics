@@ -328,7 +328,7 @@ public class TruckManageActivity extends BaseActivity {
                 break;
             case R.id.truck_operation:
                 Log.e(TAG, "onOperationClick operation : "+ truck);
-                WebRequest.getInstance().modifyTruckUsable(truck.getId(), truck.getTruckStatus().equals("1") ? "0" : "1",
+                WebRequest.getInstance().modifyTruckUsable(truck.getId(), truck.getTruckStatus().equals("1") ? "1" : "0",
                         new Observer<String>() {
                             @Override
                             public void onSubscribe(Disposable d) {

@@ -21,7 +21,6 @@ import com.inspur.eport.logistics.BaseActivity;
 import com.inspur.eport.logistics.Codes;
 import com.inspur.eport.logistics.R;
 import com.inspur.eport.logistics.bean.Team;
-import com.inspur.eport.logistics.server.TestData;
 import com.inspur.eport.logistics.server.WebRequest;
 import com.inspur.eport.logistics.utils.MyToast;
 import com.scwang.smartrefresh.header.MaterialHeader;
@@ -31,7 +30,6 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

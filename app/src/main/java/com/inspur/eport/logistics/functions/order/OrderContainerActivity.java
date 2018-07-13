@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -20,9 +19,7 @@ import com.inspur.eport.logistics.BaseActivity;
 import com.inspur.eport.logistics.R;
 import com.inspur.eport.logistics.bean.Dicts;
 import com.inspur.eport.logistics.bean.DispatchOrder;
-import com.inspur.eport.logistics.functions.dispatch.DispatchFloatingWindowManager;
-import com.inspur.eport.logistics.functions.dispatch.DispatchOrderManageActivity;
-import com.inspur.eport.logistics.server.TestData;
+import com.inspur.eport.logistics.server.WebRequest;
 import com.inspur.eport.logistics.utils.MyToast;
 import com.scwang.smartrefresh.header.MaterialHeader;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -34,11 +31,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 /**
  * 预约提箱、还箱
@@ -68,16 +66,27 @@ public class OrderContainerActivity extends BaseActivity {
     private LinkedHashMap<String, Dicts> dictsMap;
     private ArrayList<DispatchOrder> ordersList;
 
-    private int itemTotal;//总条数
-    private int pageTotal;//总页数
-    private int pageCurrent;//当前所在页
-
     private DispatchOrder operatingOrder;
+
+    private int pageSize;//每页数据条数
+    private int pageNum;//当前所在页
+    private int pageTotal;//总页数
+    private int itemTotal;//总条数
+
+    private String billNo = "";//提单号
+    private String forwarderName= "";//货代
+    private String consigneeCName= "";//收货人
+    private String delivTimeStart= "";//送货日期始
+    private String delivTimeEnd= "";//送货日期终
+    private String flowStatus= "";//状态
+    private String oriBack="";//是否原车返回
 
     private final int itemPerPage = 10;
 
     private OrderFloatingWindow floatingWindowManager;
 
+    private boolean requestDictsFinish = true;
+    private boolean requestDataListFinish = true;
 
     @Override
     protected void initUI(Bundle savedInstanceState) {
@@ -91,7 +100,6 @@ public class OrderContainerActivity extends BaseActivity {
 
         footView = mInflater.inflate(R.layout.view_text, null).findViewById(R.id.text);
         mLister.addFooterView(footView);
-        mLister.setOnScrollListener(onScrollListener);
 
         mRefresher.setOnRefreshListener(refreshListener);
         mFloatingBtn.setOnClickListener(this);
@@ -109,19 +117,7 @@ public class OrderContainerActivity extends BaseActivity {
         }
     };
 
-    private ListView.OnScrollListener onScrollListener = new AbsListView.OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(AbsListView view, int scrollState) {
-        }
-
-        @Override
-        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-        }
-    };
-
     private void refresh() {
-        createDialog(false);
         if (dictsMap == null) {
             dictsMap = new LinkedHashMap<>();
         } else {
@@ -134,9 +130,6 @@ public class OrderContainerActivity extends BaseActivity {
             ordersList.clear();
         }
 
-        requestDictsFinish = false;
-        requestDataListFinish = false;
-
         getDicts();
         getDataList(false);
     }
@@ -145,15 +138,8 @@ public class OrderContainerActivity extends BaseActivity {
      * 加载更多
      */
     private void loadMore() {
-        if (!requestDataListFinish) {
-            return;
-        }
-        requestDataListFinish = false;
         getDataList(true);
     }
-
-    private boolean requestDictsFinish = false;
-    private boolean requestDataListFinish = false;
 
     private void refreshFinished() {
         if (isFinishing()) {
@@ -168,20 +154,59 @@ public class OrderContainerActivity extends BaseActivity {
     }
 
     private void getDicts() {
-        mHandler.postDelayed(new Runnable() {
+
+        if (!requestDictsFinish || isFinishing()) {
+            return;
+        }
+
+        WebRequest.getInstance().getDicts("ReceiptStatus", new Observer<JSONObject>() {
             @Override
-            public void run() {
-                parseDicts(TestData.getdicts);
+            public void onSubscribe(Disposable d) {
+                requestDictsFinish = false;
+                createDialog(false);
             }
-        }, 1000);
+
+            @Override
+            public void onNext(JSONObject o) {
+                if (o == null) {
+                    onError(new Throwable(getString(R.string.operation_failed)));
+                    return;
+                }
+                if (!o.getBoolean("success")) {
+                    onError(new Throwable(o.getString("failReason")));
+                    return;
+                }
+
+                parseDicts(o);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                requestDictsFinish = true;
+                refreshFinished();
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
     }
 
-    private void parseDicts(String data) {
-        JSONObject rootJson = JSON.parseObject(data);
-        JSONArray dataArray = rootJson.getJSONObject("data").getJSONArray("ForwardStatus");
-        for (int i = 0; i < dataArray.size(); i++) {
-            Dicts dict = JSON.parseObject(dataArray.get(i).toString(), Dicts.class);
-            dictsMap.put(dict.getValue(), dict);
+    private void parseDicts(JSONObject rootJson) {
+
+        if (requestDictsFinish || isFinishing()) {
+            return;
+        }
+
+        JSONArray dataArray = rootJson.getJSONObject("data").getJSONArray("ReceiptStatus");
+        if (dataArray == null) {
+
+        }else {
+            for (int i = 0; i < dataArray.size(); i++) {
+                Dicts dict = JSON.parseObject(dataArray.get(i).toString(), Dicts.class);
+                dictsMap.put(dict.getValue(), dict);
+            }
         }
 
         requestDictsFinish = true;
@@ -195,12 +220,58 @@ public class OrderContainerActivity extends BaseActivity {
      * @param add 获取后是更新还是添加
      */
     private void getDataList(final boolean add) {
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                parseDataList(TestData.orderDataList, add);
-            }
-        }, new Random().nextInt(3) * 1000);
+
+        if (!requestDataListFinish) {
+            return;
+        }
+
+        WebRequest.getInstance().getDispatchList(
+                add ? pageNum + 1 : 1,
+                pageSize == 0 ? itemPerPage : pageSize,
+                billNo,
+                forwarderName,
+                consigneeCName,
+                delivTimeStart,
+                delivTimeEnd,
+                flowStatus,
+                oriBack,
+                new Observer<JSONObject>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        requestDataListFinish = false;
+                        createDialog(false);
+                        Log.e(TAG, "onSubscribe: ");
+                    }
+
+                    @Override
+                    public void onNext(JSONObject o) {
+                        Log.e(TAG, "onNext: "+o);
+                        if (o == null) {
+                            onError(new Throwable(getString(R.string.operation_failed)));
+                            return;
+                        }
+                        if (!o.getBoolean("success")) {
+                            onError(new Throwable(o.getString("failReason")));
+                            return;
+                        }
+                        parseDataList(o, add);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: "+e);
+                        requestDataListFinish = true;
+                        refreshFinished();
+                        MyToast.show(OrderContainerActivity.this,
+                                e == null ? getString(R.string.operation_failed) : e.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.e(TAG, "onComplete: ");
+                    }
+                }
+        );
     }
 
     /**
@@ -208,12 +279,13 @@ public class OrderContainerActivity extends BaseActivity {
      *
      * @param add 获取后是更新还是添加
      */
-    private void parseDataList(String data, boolean add) {
-        JSONObject rootJson = JSON.parseObject(data);
+    private void parseDataList(JSONObject rootJson, boolean add) {
         JSONArray dataArray = rootJson.getJSONObject("data").getJSONArray("list");
-        itemTotal = rootJson.getJSONObject("data").getInteger("total");
+
         pageTotal = rootJson.getJSONObject("data").getInteger("pages");
-        pageCurrent = rootJson.getJSONObject("data").getInteger("pageNum");
+        pageNum = rootJson.getJSONObject("data").getInteger("pageNum");
+        pageSize = rootJson.getJSONObject("data").getInteger("size");
+        itemTotal = rootJson.getJSONObject("data").getInteger("total");
 
         if (add) {
             ordersList.addAll(JSON.parseArray(dataArray.toJSONString(), DispatchOrder.class));
@@ -274,11 +346,30 @@ public class OrderContainerActivity extends BaseActivity {
                     //TODO get data list within limits
                     Log.e(TAG, "onCheckClick: no = " + no + ";delegate=" + delegate + ";buyer=" + buyer
                             + ";dateStart=" + dateStart + ";dateEnd=" + dateEnd + ";status=" + status);
+                    billNo = no;
+                    forwarderName = delegate;
+                    consigneeCName = buyer;
+                    delivTimeStart = dateStart;
+                    delivTimeEnd = dateEnd;
+                    flowStatus = status;
+                    oriBack = "";
+
+                    getDataList(false);
                 }
 
                 @Override
                 public void onResetClick() {
                     //TODO get data list without limits
+
+                    billNo = "";
+                    forwarderName = "";
+                    consigneeCName = "";
+                    delivTimeStart = "";
+                    delivTimeEnd = "";
+                    flowStatus = "";
+                    oriBack = "";
+
+                    getDataList(false);
                 }
             });
         }
@@ -410,11 +501,11 @@ public class OrderContainerActivity extends BaseActivity {
         private void setDate(TextView view, DispatchOrder order) {
             String date = "";
 
-            if (TextUtils.isEmpty(order.getDelivTime())) {
+            if (order.getDelivTime() == null) {
 
             } else {
                 try {
-                    date = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(new Date(Long.parseLong(order.getDelivTime())));
+                    date = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(new Date(order.getDelivTime()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -477,7 +568,7 @@ public class OrderContainerActivity extends BaseActivity {
 
         //提箱预约发送状态
         private void setOrderGetStatus(TextView view, DispatchOrder order) {
-            if (TextUtils.isEmpty(order.getTransStatus()) || TextUtils.isEmpty(order.getTransTime())) {
+            if (TextUtils.isEmpty(order.getTransStatus()) || order.getTransTime() == null) {
                 view.setText("");
                 return;
             }
@@ -485,7 +576,7 @@ public class OrderContainerActivity extends BaseActivity {
             try {
                 status = getString(order.getTransStatus().equals("2") ? R.string.order_send_success : R.string.order_send_fail)
                         + "  " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).
-                        format(new Date(Long.parseLong(order.getTransTime())));
+                        format(new Date(order.getTransTime()));
             }catch (Exception e) {
                 e.printStackTrace();
             }
@@ -495,7 +586,7 @@ public class OrderContainerActivity extends BaseActivity {
 
         //还箱预约发送状态
         private void setOrderRtnStatus(TextView view, DispatchOrder order) {
-            if (TextUtils.isEmpty(order.getTransStatusRtn()) || TextUtils.isEmpty(order.getTransTimeRtn())) {
+            if (TextUtils.isEmpty(order.getTransStatusRtn()) || order.getTransTimeRtn() == null) {
                 view.setText("");
                 return;
             }
@@ -503,7 +594,7 @@ public class OrderContainerActivity extends BaseActivity {
             try {
                 status = getString(order.getTransStatusRtn().equals("2") ? R.string.order_send_success : R.string.order_send_fail)
                         + "  " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).
-                        format(new Date(Long.parseLong(order.getTransTimeRtn())));
+                        format(new Date(order.getTransTimeRtn()));
             }catch (Exception e) {
                 e.printStackTrace();
             }

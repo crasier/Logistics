@@ -2,7 +2,9 @@ package com.inspur.eport.logistics;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
+import android.support.annotation.MainThread;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -12,7 +14,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.inspur.eport.logistics.account.LoginActivity;
+import com.inspur.eport.logistics.bean.EventBean;
+import com.inspur.eport.logistics.account.WebLoginActivity;
 import com.inspur.eport.logistics.utils.MyToast;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -178,6 +187,28 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 }
             }
         });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(EventBean event) {
+        switch (event.getTag()) {
+            case EventBean.TAG_SESSION_INVALID:
+//                startActivity(new Intent(this, WebLoginActivity.class));
+                startActivity(new Intent(this, LoginActivity.class));
+                break;
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override

@@ -41,7 +41,7 @@ public class DispatchOrder implements Serializable{
     @JSONField(name = "CNTR_SIZE")
     private String containerSize;
     @JSONField(name = "DELIV_TIME")
-    private String delivTime;
+    private Long delivTime;
     @JSONField(name = "ORI_BACK")
     private String oriBack;
     @JSONField(name = "RTN_DRIVER_ID")
@@ -64,11 +64,11 @@ public class DispatchOrder implements Serializable{
     @JSONField(name = "TRANS_STATUS")//预约提箱
     private String transStatus;
     @JSONField(name = "TRANS_TIME")//预约提箱发送时间
-    private String transTime;
+    private Long transTime;
     @JSONField(name = "RTN_TRANS_STATUS")//预约还箱
     private String transStatusRtn;
     @JSONField(name = "RTN_TRANS_TIME")//预约还箱发送时间
-    private String transTimeRtn;
+    private Long transTimeRtn;
 
     private boolean spread;
     private boolean selected;
@@ -221,11 +221,11 @@ public class DispatchOrder implements Serializable{
         this.containerSize = containerSize;
     }
 
-    public String getDelivTime() {
+    public Long getDelivTime() {
         return delivTime;
     }
 
-    public void setDelivTime(String delivTime) {
+    public void setDelivTime(Long delivTime) {
         this.delivTime = delivTime;
     }
 
@@ -289,11 +289,11 @@ public class DispatchOrder implements Serializable{
         this.transStatus = transStatus;
     }
 
-    public String getTransTime() {
+    public Long getTransTime() {
         return transTime;
     }
 
-    public void setTransTime(String transTime) {
+    public void setTransTime(Long transTime) {
         this.transTime = transTime;
     }
 
@@ -305,11 +305,11 @@ public class DispatchOrder implements Serializable{
         this.transStatusRtn = transStatusRtn;
     }
 
-    public String getTransTimeRtn() {
+    public Long getTransTimeRtn() {
         return transTimeRtn;
     }
 
-    public void setTransTimeRtn(String transTimeRtn) {
+    public void setTransTimeRtn(Long transTimeRtn) {
         this.transTimeRtn = transTimeRtn;
     }
 
@@ -349,10 +349,25 @@ public class DispatchOrder implements Serializable{
         this.selected = selected;
     }
 
+    /**
+     * 是否可以派车
+     * */
     public boolean isCanDispatch() {
         if (TextUtils.isEmpty(getStatus())) {
             return false;
         }
         return getStatus().equals(Dicts.STATUS_5520) || getStatus().equals(Dicts.STATUS_5550);
+    }
+
+    /**
+     * 根据状态判断箱子是否可以还箱改派
+     * */
+    public boolean isCanDispatchReturn() {
+        if (TextUtils.isEmpty(getStatus())) {
+            return false;
+        }
+
+        return getStatus().equals(Dicts.STATUS_5600) || getStatus().equals(Dicts.STATUS_5650) ||
+                getStatus().equals(Dicts.STATUS_5700)|| getStatus().equals(Dicts.STATUS_5700);
     }
 }

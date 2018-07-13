@@ -119,7 +119,6 @@ public class HomeFragment extends BaseFragment {
             @Override
             public void onNext(String data) {
                 Log.e(TAG, "onNext: " + data);
-                mActivity.dismissDialog();
                 if (data == null) {
                     onError(new Throwable(getString(R.string.operation_failed)));
                     return;
@@ -146,8 +145,15 @@ public class HomeFragment extends BaseFragment {
 
     private void parseData(String data) {
 
-        JSONObject rootData = JSON.parseObject(data);
-        if (rootData.getString("IsOk") == null || !rootData.getString("IsOk").equals("1")) {
+
+        JSONObject rootData = null;
+        try {
+            rootData = JSON.parseObject(data);
+        }catch (Exception e) {
+
+        }
+
+        if (rootData == null || rootData.getString("IsOk") == null || !rootData.getString("IsOk").equals("1")) {
             MyToast.show(mActivity, R.string.operation_failed);
             return;
         }

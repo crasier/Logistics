@@ -18,10 +18,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.inspur.eport.logistics.BaseActivity;
+import com.inspur.eport.logistics.Codes;
 import com.inspur.eport.logistics.R;
 import com.inspur.eport.logistics.bean.Dicts;
 import com.inspur.eport.logistics.bean.DispatchOrder;
-import com.inspur.eport.logistics.server.TestData;
 import com.inspur.eport.logistics.server.WebRequest;
 import com.inspur.eport.logistics.utils.MyToast;
 import com.scwang.smartrefresh.header.MaterialHeader;
@@ -89,6 +89,8 @@ public class DispatchOrderManageActivity extends BaseActivity {
 
     private DispatchFloatingWindowManager floatingWindowManager;
 
+    private boolean requestDictsFinish = true;
+    private boolean requestDataListFinish = true;
 
     @Override
     protected void initUI(Bundle savedInstanceState) {
@@ -145,9 +147,6 @@ public class DispatchOrderManageActivity extends BaseActivity {
             ordersList.clear();
         }
 
-        requestDictsFinish = false;
-        requestDataListFinish = false;
-
         getDicts();
         getDataList(false);
     }
@@ -156,15 +155,8 @@ public class DispatchOrderManageActivity extends BaseActivity {
      * 加载更多
      */
     private void loadMore() {
-        if (!requestDataListFinish) {
-            return;
-        }
-        requestDataListFinish = false;
         getDataList(true);
     }
-
-    private boolean requestDictsFinish = false;
-    private boolean requestDataListFinish = false;
 
     private void refreshFinished() {
         if (isFinishing()) {
@@ -241,6 +233,10 @@ public class DispatchOrderManageActivity extends BaseActivity {
      */
     private void getDataList(final boolean add) {
 
+        if (!requestDataListFinish) {
+            return;
+        }
+
         WebRequest.getInstance().getDispatchList(
                 add ? pageNum + 1 : 1,
                 pageSize == 0 ? itemPerPage : pageSize,
@@ -297,7 +293,7 @@ public class DispatchOrderManageActivity extends BaseActivity {
      */
     private void parseDataList(JSONObject rootJson, boolean add) {
 
-        if (requestDataListFinish) {
+        if (requestDataListFinish || isFinishing()) {
             return;
         }
 
@@ -409,17 +405,17 @@ public class DispatchOrderManageActivity extends BaseActivity {
                 Log.e(TAG, "onOperationClick check : " + order);
 //                MyToast.show(DispatchOrderManageActivity.this, "提箱改派");
                 Intent dispatchIntent = new Intent(this, TransportOrderDispatchActivity.class);
-                dispatchIntent.putExtra("orderId", operatingOrder.getId());
+                dispatchIntent.putExtra("fkForwardingId", operatingOrder.getForwardingId());
                 dispatchIntent.putExtra("menuName", getString(R.string.dispatch_redispatch_title));
-                startActivity(dispatchIntent);
+                startActivityForResult(dispatchIntent, Codes.CODE_REQUEST_DISPATCH);
                 break;
             case R.id.order_return_change:
                 Log.e(TAG, "onOperationClick receive : " + order);
 //                MyToast.show(DispatchOrderManageActivity.this, "还箱改派");
                 Intent returnIntent = new Intent(this, TransportOrderReturnActivity.class);
-                returnIntent.putExtra("orderId", operatingOrder.getId());
+                returnIntent.putExtra("fkForwardingId", operatingOrder.getForwardingId());
                 returnIntent.putExtra("menuName", getString(R.string.dispatch_return_title));
-                startActivity(returnIntent);
+                startActivityForResult(returnIntent, Codes.CODE_REQUEST_DISPATCH);
                 break;
         }
     }
@@ -430,6 +426,15 @@ public class DispatchOrderManageActivity extends BaseActivity {
         operatingOrder = order;
         ordersList.set(position, order);
         mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == Codes.CODE_REQUEST_DISPATCH) {
+                getDataList(false);
+            }
+        }
     }
 
     @Override
@@ -527,11 +532,11 @@ public class DispatchOrderManageActivity extends BaseActivity {
         private void setDate(TextView view, DispatchOrder order) {
             String date = "";
 
-            if (TextUtils.isEmpty(order.getDelivTime())) {
+            if (order.getDelivTime() == null) {
 
             } else {
                 try {
-                    date = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(new Date(Long.parseLong(order.getDelivTime())));
+                    date = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(new Date(order.getDelivTime()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

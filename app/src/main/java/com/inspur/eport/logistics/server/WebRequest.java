@@ -1,22 +1,35 @@
 package com.inspur.eport.logistics.server;
 
+import android.net.LocalServerSocket;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.inspur.eport.logistics.Constants;
+import com.inspur.eport.logistics.bean.EventBean;
 import com.inspur.eport.logistics.server.retrofit.ApiManager;
 import com.inspur.eport.logistics.server.retrofit.TokenLoader;
 import com.inspur.eport.logistics.server.retrofit.Urls;
+import com.inspur.eport.logistics.utils.EncryptUtil;
 
 
+import org.greenrobot.eventbus.EventBus;
+
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
@@ -33,7 +46,8 @@ public class WebRequest {
         String,
         Boolean,
         NoBody,
-        Void
+        Void,
+        Body
     }
 
     public enum RMethod {
@@ -53,6 +67,8 @@ public class WebRequest {
         return instance;
     }
 
+    private List<Observable> observables = new LinkedList<>();
+
     private void withToken(final String url, final Observer observer, final RType type, final RMethod method, final RequestBody... body) {
         final Observable<?> observable = Observable.defer(new Callable<ObservableSource<String>>() {
             @Override
@@ -64,7 +80,7 @@ public class WebRequest {
             }
         }).flatMap(new Function<String, ObservableSource<?>>() {
             @Override
-            public ObservableSource<?> apply(String s) throws Exception {
+            public ObservableSource<?> apply(String s) {
                 Log.e(TAG, "222222222   "+s);
                 switch (type) {
                     case JSONObject:
@@ -89,9 +105,9 @@ public class WebRequest {
                             return ApiManager.getInstance().getRetrofitService().postVoid(formatToken(s), url, body == null ? null : body[0]);
                     default:
                         if (method == RMethod.GET)
-                            return ApiManager.getInstance().getRetrofitService().getStr(formatToken(s), url);
+                            return ApiManager.getInstance().getRetrofitService().getBody(formatToken(s), url);
                         else
-                            return ApiManager.getInstance().getRetrofitService().postStr(formatToken(s), url, body == null ? null : body[0]);
+                            return ApiManager.getInstance().getRetrofitService().postBody(formatToken(s), url, body == null ? null : body[0]);
                 }
             }
         }).flatMap(new Function<Object, ObservableSource<?>>() {
@@ -99,35 +115,23 @@ public class WebRequest {
             public ObservableSource<?> apply(Object object) throws Exception {
                 Log.e(TAG, "333333333   "+object);
 
-                if (object == null || object instanceof Void) {
-                    return Observable.error(new Throwable("1"));
-                }else {
-                    return Observable.just(object);
+                try {
+                    JSONObject jo = JSON.parseObject(String.valueOf(object));
+                    if (jo.getIntValue("code") == 401) {
+
+                        for (Observable ob : observables) {
+                            ob.unsubscribeOn(Schedulers.io());
+                        }
+                        observables.clear();
+                        EventBus.getDefault().post(new EventBean(EventBean.TAG_SESSION_INVALID));
+                        return Observable.error(new Throwable("登录过期，正在重新登录..."));
+                    }
+                }catch (Exception e) {
+
                 }
 
-                //TODO when is not login or token is invalid, such as timeout, login with other client.
-
-//                if (object instanceof String) {
-//                    String str = (String) object;
-//                    if (str.contains("401")) {
-//                        return Observable.error(new Throwable("401"));
-//                    }else if (str.isEmpty()){
-//                        return Observable.error(new Throwable("1"));
-//                    }else {
-//                        return Observable.just(str);
-//                    }
-//                }else if (object instanceof JSONObject) {
-//                    JSONObject jsonObject = (JSONObject) object;
-//                    if (jsonObject.getInteger("code") == 401) {
-//                        return Observable.error(new Throwable("401"));
-//                    }else if (TextUtils.isEmpty(jsonObject.getString("message"))){
-//                        return Observable.error(new Throwable("1"));
-//                    }else {
-//                        return Observable.just(jsonObject.getString("message"));
-//                    }
-//                }else {
-//                    return Observable.error(new Throwable("100"));
-//                }
+                observables.clear();
+                return Observable.just(object);
             }
         }).retryWhen(new Function<Observable<Throwable>, ObservableSource<?>>() {
 
@@ -138,6 +142,7 @@ public class WebRequest {
                     @Override
                     public ObservableSource<?> apply(Throwable throwable) throws Exception {
                         Log.e(TAG, "44444444   "+throwable);
+
                         if (mRetryCount > 1) {
                             return Observable.error(new Throwable("重登陆失败"));
                         }else if (throwable != null && throwable.getMessage().equals("401")) {
@@ -151,6 +156,7 @@ public class WebRequest {
             }
         });
 
+        observables.add(observable);
         observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
@@ -159,16 +165,34 @@ public class WebRequest {
     /**
      * 测试用登录
      * */
-    public void login(String name, String pwd, Observer<JSONObject> observer) {
-        String url = Urls.URL_LOGIN;
-        ApiManager.getInstance().getRetrofitService().login(url, name, pwd)
+    public void login(String name, String pwd, String token, InputStream pfxInputStream, Observer observer) {
+//        String url = Urls.URL_LOGIN;
+//        ApiManager.getInstance().getRetrofitService().login(url, name, pwd)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(observer);
+
+        String ssoInfo = EncryptUtil.getEncryptInfo(
+                name,
+                pwd,
+                null,
+                pfxInputStream,
+                "62236644");
+
+        Log.e("getEncryptInfo", "after encrypt: ssoInfo = "+ssoInfo);
+        String url = String.format(Locale.CHINA, Constants.URL_LOGIN_CAS,
+                "sso",
+                "kmtPNcJqdsMUtBevloOLU6LsjR8l7h8T3TjcQJxOCqAm49HYy2pEX3KilIrv7EoGov047u3j5cVMJhgvCD1RxSGlQRHcuxzN3bnfm6bmfoZe%2BNtY1q0r%2B77Us2M7jW0P4497IGqzon%2B2UNgqxdwS%2BQR%2FfAviK7Sz8bUWcf9m%2BgwzSjLOG9Fu7MKuImxQrmkndSz2vqrjoVlYtzE5VZE43f%2BdRxliV3sLItmPLeOof%2FEEliWuJAGAwvgRX0YhszcsPaLpsC0cqtfGhhJTTV%2Bd%2FUHNpFSixaF1vR3TAwBhovQzYneIe50uBx3P%2FjLC6vwrzHG6yPHSzeoZ%2FH7uY%2B6X3Q%3D%3D");
+
+        ApiManager.getInstance().getRetrofitService().login("https://test.sditds.gov.cn:5565/cas/login?service=http://test.sditds.gov.cn:81/cargo/security/login&theme=sso_cargo&cert_alias=sso&encrypt_info=kmtPNcJqdsMUtBevloOLU6LsjR8l7h8T3TjcQJxOCqAm49HYy2pEX3KilIrv7EoGov047u3j5cVMJhgvCD1RxSGlQRHcuxzN3bnfm6bmfoZe%2BNtY1q0r%2B77Us2M7jW0P4497IGqzon%2B2UNgqxdwS%2BQR%2FfAviK7Sz8bUWcf9m%2BgwzSjLOG9Fu7MKuImxQrmkndSz2vqrjoVlYtzE5VZE43f%2BdRxliV3sLItmPLeOof%2FEEliWuJAGAwvgRX0YhszcsPaLpsC0cqtfGhhJTTV%2Bd%2FUHNpFSixaF1vR3TAwBhovQzYneIe50uBx3P%2FjLC6vwrzHG6yPHSzeoZ%2FH7uY%2B6X3Q%3D%3D%2BNtY1q0r%2B77Us2M7jW0P4497IGqzon%2B2UNgqxdwS%2BQR%2FfAviK7Sz8bUWcf9m%2BgwzSjLOG9Fu7MKuImxQrmkndSz2vqrjoVlYtzE5VZE43f%2BdRxliV3sLItmPLeOof%2FEEliWuJAGAwvgRX0YhszcsPaLpsC0cqtfGhhJTTV%2Bd%2FUHNpFSixaF1vR3TAwBhovQzYneIe50uBx3P%2FjLC6vwrzHG6yPHSzeoZ%2FH7uY%2B6X3Q%3D%3D")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
     }
 
     private String formatToken(String token) {
-        return String.format(Locale.CHINA, "sdeport.session.id=%s", token);
+//        return String.format(Locale.CHINA, "sdeport.session.id=%s", token);
+        return token;
     }
 
     /**
@@ -219,6 +243,124 @@ public class WebRequest {
                 delivTimeEnd,
                 flowStatus,
                 Calendar.getInstance().getTimeInMillis());
+
+        withToken(url, observer, RType.JSONObject, RMethod.GET);
+    }
+
+    /**
+     * 获取订单详细信息
+     * */
+    public void getOrderDetail(String id, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/forwarder/motorcade/detail?" +
+                        "forwardingId=%s",
+                Urls.URL_SERVER_BASE,
+                id);
+
+        withToken(url, observer, RType.String, RMethod.GET);
+    }
+
+    /**
+     * 拒绝/接受订单,5510 拒绝, 5520 接受, 5530 撤销
+     * */
+    public void modifyOrderStatus(String id, String status, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/forwarder/changeMotoForOrdStatus?" +
+                        "id=%s" +
+                        "&flowStatus=%s",
+                Urls.URL_SERVER_BASE,
+                id,
+                status);
+
+        withToken(url, observer, RType.JSONObject, RMethod.GET);
+    }
+
+    /**
+     * 提箱派车列表获取
+     */
+    public void getOrderDispatchList(int pageNum, int pageSize, String billNo, String delivPlaceName,
+                              String rtnPlaceName, String flowStatus, String consigneeCName,
+                              String forwarderName, String fkForwardingId, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getDetailsList?" +
+                        "pageNum=%s" +
+                        "&pageSize=%s" +
+                        "&billNo=%s" +
+                        "&delivPlaceName=%s" +
+                        "&rtnPlaceName=%s" +
+                        "&flowStatus=%s" +
+                        "&consigneeCName=%s" +
+                        "&forwarderName=%s" +
+                        "&fkForwardingId=%s" +
+                        "&_=%s",
+                Urls.URL_SERVER_BASE,
+                pageNum,
+                pageSize,
+                billNo,
+                delivPlaceName,
+                rtnPlaceName,
+                flowStatus,
+                consigneeCName,
+                forwarderName,
+                fkForwardingId,
+                Calendar.getInstance().getTimeInMillis());
+
+        withToken(url, observer, RType.JSONObject, RMethod.GET);
+    }
+
+    /**
+     * 获取司机列表
+     * */
+    public void getDriverList(Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getDriverList",
+                Urls.URL_SERVER_BASE);
+
+        withToken(url, observer, RType.JSONArray, RMethod.GET);
+    }
+
+    /**
+     * 获取卡车列表
+     * */
+    public void getTruckList(Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getTruckList",
+                Urls.URL_SERVER_BASE);
+
+        withToken(url, observer, RType.JSONArray, RMethod.GET);
+    }
+
+    /**
+     * 执行派车操作
+     * @param fkReceiptId 多个以“,”分隔
+     * @param id 多个以“,”分隔
+     * @param fkReceiptId 多个以“,”分隔
+     * @param delivTimeStart 多个以“,”分隔
+     * @param appointTimes 多个以“,”分隔
+     * @param rtnAppointTimes 多个以“,”分隔
+     * @param oriBack 多个以“,”分隔
+     * */
+
+    public void dispatch(String fkForwardingId, String driverId, String truckNo, String getCtn,
+                         String id, String fkReceiptId, String delivTimeStart, String appointTimes,
+                         String rtnAppointTimes, String oriBack, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/dispatchTruck?" +
+                        "fkForwardingId=%s" +
+                        "&driverId=%s" +
+                        "&truckNo=%s" +
+                        "&getCtn=%s" +
+                        "&fkReceiptId=%s" +
+                        "&id=%s" +
+                        "&delivTimeStart=%s" +
+                        "&appointTimes=%s" +
+                        "&rtnAppointTimes=%s" +
+                        "&oriBack=%s",
+                Urls.URL_SERVER_BASE,
+                fkForwardingId,
+                driverId,
+                truckNo,
+                getCtn,
+                fkReceiptId,
+                id,
+                delivTimeStart,
+                appointTimes,
+                rtnAppointTimes,
+                oriBack);
 
         withToken(url, observer, RType.JSONObject, RMethod.GET);
     }
@@ -492,15 +634,19 @@ public class WebRequest {
     }
 
     /**
+     * 获取预约
+     * */
+
+    /**
      * 物流状态跟踪
      * */
     public void getStatusRecord(String billNo, Observer observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/ogisticsState/getStatusRecord?" +
+        String url = String.format(Locale.CHINA, "%s/logistics/logisticsState/getStatusRecord?" +
                         "billNo=%s" +
                         "&_=%s",
                 Urls.URL_SERVER_BASE,
                 billNo,
-                "");
+                Calendar.getInstance().getTimeInMillis());
 
         withToken(url, observer, RType.JSONObject, RMethod.GET);
     }

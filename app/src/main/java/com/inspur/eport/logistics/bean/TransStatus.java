@@ -13,7 +13,7 @@ public class TransStatus implements Serializable {
     @JSONField(name = "DATASOURCE")
     private String source;
     @JSONField(name = "FLOW_DATE")
-    private String date;
+    private Long date;
     @JSONField(name = "FLOW_STATUS")
     private String status;
     @JSONField(name = "R_ORG_NAME")
@@ -46,11 +46,11 @@ public class TransStatus implements Serializable {
         this.source = source;
     }
 
-    public String getDate() {
+    public Long getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Long date) {
         this.date = date;
     }
 

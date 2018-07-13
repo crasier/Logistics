@@ -2,16 +2,27 @@ package com.inspur.eport.logistics.server.retrofit;
 
 import android.util.Log;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.GsonBuilder;
-import com.inspur.eport.logistics.server.retrofit.NullOrEmptyConvertFactory;
-import com.inspur.eport.logistics.server.retrofit.RetrofitService;
+import com.inspur.eport.logistics.Constants;
 
-import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Headers;
 import okhttp3.Interceptor;
@@ -20,9 +31,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.Route;
 import okio.Buffer;
-import okio.BufferedSink;
 import okio.BufferedSource;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -59,6 +68,8 @@ public class ApiManager {
                 .connectTimeout(8000, TimeUnit.MILLISECONDS)
                 .readTimeout(5000, TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(true)
+                .sslSocketFactory(createSSLSocketFactory(), new MyTrustManager())
+                .hostnameVerifier(createHostNameVerifier())
 //                .authenticator(new Authenticator() {
 //                    @Nullable
 //                    @Override
@@ -81,6 +92,50 @@ public class ApiManager {
                     .build();
 
             retrofitService = retrofit.create(RetrofitService.class);
+        }
+    }
+
+    private SSLSocketFactory createSSLSocketFactory() {
+        SSLSocketFactory factory = null;
+        MyTrustManager mTrustManager = null;
+        try {
+            mTrustManager = new MyTrustManager();
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, new TrustManager[]{mTrustManager}, new SecureRandom());
+            factory = sc.getSocketFactory();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        }
+        return factory;
+    }
+
+    private HostnameVerifier createHostNameVerifier() {
+        HostnameVerifier verifier = new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        };
+        return verifier;
+    }
+
+    private class MyTrustManager implements X509TrustManager {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
         }
     }
 
@@ -125,7 +180,7 @@ public class ApiManager {
                 Buffer buffer = source.buffer();
 
                 Charset charset = UTF8;
-                MediaType contentType = responseBody.contentType();
+                final MediaType contentType = responseBody.contentType();
                 if (contentType != null) {
                     try {
                         charset = contentType.charset(UTF8);
@@ -140,15 +195,27 @@ public class ApiManager {
 
                 if (contentLength != 0) {
                     String result = buffer.clone().readString(charset);
+                    String url = response.request().url().toString();
                     Log.e("apiManager", " response.url():"+ response.request().url());
                     Log.e("apiManager", " response.body():"+ result);
                     //得到所需的string，开始判断是否异常
                     //***********************do something*****************************
+                    if (url.equals(Constants.URL_LOGIN)) {
 
+                        Log.e("apiManager", "rebuild response");
+
+                        JSONObject content = new JSONObject();
+                        content.put("code", 401);
+                        content.put("message", "invalid session");
+                        content.put("data", "");
+                        ResponseBody body = ResponseBody.create(contentType, content.toJSONString());
+
+                        return response.newBuilder()
+                                .body(body)
+                                .build();
+                    }
                 }
-
             }
-
             return response;
         }
     }

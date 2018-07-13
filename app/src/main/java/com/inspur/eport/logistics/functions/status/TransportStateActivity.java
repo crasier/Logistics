@@ -19,20 +19,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.inspur.eport.logistics.BaseActivity;
 import com.inspur.eport.logistics.R;
 import com.inspur.eport.logistics.bean.Dicts;
-import com.inspur.eport.logistics.bean.Driver;
 import com.inspur.eport.logistics.bean.TransStatus;
-import com.inspur.eport.logistics.server.TestData;
 import com.inspur.eport.logistics.server.WebRequest;
 import com.inspur.eport.logistics.utils.MyToast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -239,13 +233,13 @@ public class TransportStateActivity extends BaseActivity {
                 transContent = getString(R.string.transport_status_5200);
             }else if (trans.getStatus().equals(Dicts.STATUS_5300)) {
                 transContent = getString(R.string.transport_status_5300);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5300)) {
+            }else if (trans.getStatus().equals(Dicts.STATUS_5400)) {
                 transContent = getString(R.string.transport_status_5400);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5300)) {
+            }else if (trans.getStatus().equals(Dicts.STATUS_5700)) {
                 transContent = getString(R.string.transport_status_5700);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5300)) {
+            }else if (trans.getStatus().equals(Dicts.STATUS_5800)) {
                 transContent = getString(R.string.transport_status_5800);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5300)) {
+            }else if (trans.getStatus().equals(Dicts.STATUS_5900)) {
                 transContent = getString(R.string.transport_status_5900);
             }
 
@@ -256,7 +250,7 @@ public class TransportStateActivity extends BaseActivity {
 
             TransStatus trans = statusList.get(position);
 
-            if (TextUtils.isEmpty(trans.getDate())) {
+            if (trans.getDate() == null) {
                 view.setText("");
                 return;
             }
@@ -264,7 +258,7 @@ public class TransportStateActivity extends BaseActivity {
             String date = "";
             try {
                 date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
-                        .format(new Date(Long.parseLong(trans.getDate())));
+                        .format(new Date(trans.getDate()));
             }catch (Exception e) {
                 e.printStackTrace();
             }

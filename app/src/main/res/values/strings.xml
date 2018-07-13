@@ -82,6 +82,8 @@
     <string name="order_dispatch">派车</string>
 
     <string name="order_check_no">提单号</string>
+    <string name="order_check_deliv_place">提箱地</string>
+    <string name="order_check_rtn_place">还箱地</string>
     <string name="order_check_delegate">货代名称</string>
     <string name="order_check_buyer">收货人</string>
     <string name="order_check_date">送货日期</string>

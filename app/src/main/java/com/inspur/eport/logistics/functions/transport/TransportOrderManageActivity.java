@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -24,7 +25,6 @@ import com.inspur.eport.logistics.R;
 import com.inspur.eport.logistics.bean.Dicts;
 import com.inspur.eport.logistics.bean.Order;
 import com.inspur.eport.logistics.functions.dispatch.TransportOrderDispatchActivity;
-import com.inspur.eport.logistics.server.TestData;
 import com.inspur.eport.logistics.server.WebRequest;
 import com.inspur.eport.logistics.utils.MyToast;
 import com.scwang.smartrefresh.header.MaterialHeader;
@@ -190,9 +190,6 @@ public class TransportOrderManageActivity extends BaseActivity {
 
             @Override
             public void onNext(JSONObject object) {
-                if (true) {
-                    Log.e(TAG, "onNext: getDicts = "+object);
-                }
                 if (object == null || !object.getBooleanValue("success")) {
                     onError(new Throwable(getString(R.string.operation_failed)));
                     return;
@@ -357,7 +354,6 @@ public class TransportOrderManageActivity extends BaseActivity {
 
                 @Override
                 public void onCheckClick(String no, String delegate, String buyer, String dateStart, String dateEnd, String status) {
-                    //TODO get data list within limits
                     Log.e(TAG, "onCheckClick: no = "+no+";delegate="+delegate+";buyer="+buyer+";dateStart="+dateStart+";dateEnd="+dateEnd+";status="+status);
                     billNo = no;
                     forwarderName = delegate;
@@ -371,7 +367,6 @@ public class TransportOrderManageActivity extends BaseActivity {
 
                 @Override
                 public void onResetClick() {
-                    //TODO get data list without limits
                     billNo = "";
                     forwarderName = "";
                     consigneeCName = "";
@@ -390,7 +385,7 @@ public class TransportOrderManageActivity extends BaseActivity {
     /**
      * 点击展开项中的功能按钮操作
      * */
-    private void onOperationClick(View view, Order order) {
+    private void onOperationClick(View view, Order order, int position) {
 
         operatingOrder = order;
 
@@ -404,24 +399,66 @@ public class TransportOrderManageActivity extends BaseActivity {
             case R.id.order_receive:
                 Log.e(TAG, "onOperationClick receive : "+order);
                 MyToast.show(TransportOrderManageActivity.this, "接单请求");
+                modifyOrderStatus(order, "5520", position);
                 break;
             case R.id.order_refuse:
                 Log.e(TAG, "onOperationClick refuse : "+order);
                 MyToast.show(TransportOrderManageActivity.this, "拒绝接单");
+                modifyOrderStatus(order, "5510", position);
                 break;
             case R.id.order_cancel:
                 Log.e(TAG, "onOperationClick cancel : "+order);
                 MyToast.show(TransportOrderManageActivity.this, "取消委托单");
+                modifyOrderStatus(order, "5530", position);
                 break;
             case R.id.order_dispatch:
                 Log.e(TAG, "onOperationClick dispatch : "+order);
 //                MyToast.show(TransportOrderManageActivity.this, "请求派车");
                 Intent dispatchIntent = new Intent(TransportOrderManageActivity.this, TransportOrderDispatchActivity.class);
-                dispatchIntent.putExtra("orderId", order.getId());
+                dispatchIntent.putExtra("fkForwardingId", order.getId());
                 dispatchIntent.putExtra("menuName", getString(R.string.dispatch_title));
                 startActivity(dispatchIntent);
                 break;
         }
+    }
+
+    private void modifyOrderStatus(Order order, final String status, final int position) {
+        WebRequest.getInstance().modifyOrderStatus(order.getId(), status, new Observer<JSONObject>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                createDialog(false);
+            }
+
+            @Override
+            public void onNext(JSONObject o) {
+                if (o == null) {
+                    onError(new Throwable(getString(R.string.operation_failed)));
+                    return;
+                }
+
+                if (!o.getBooleanValue("success")) {
+                    onError(new Throwable(o.getString("failReason")));
+                    return;
+                }
+
+                dismissDialog();
+                MyToast.show(TransportOrderManageActivity.this, R.string.operation_success);
+                ordersList.get(position).setStatus(status);
+                mAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                dismissDialog();
+                MyToast.show(TransportOrderManageActivity.this,
+                        e == null ? getString(R.string.operation_failed) : e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
     }
 
     private void onItemClick(int position) {
@@ -496,7 +533,7 @@ public class TransportOrderManageActivity extends BaseActivity {
             holder.addr.setText(ordersList.get(position).getAddress());
             setContainer(holder.container, ordersList.get(position));
             setStatus(holder.status, ordersList.get(position));
-            setOperation(holder, ordersList.get(position));
+            setOperation(holder, ordersList.get(position), position);
             return convertView;
         }
 
@@ -544,7 +581,7 @@ public class TransportOrderManageActivity extends BaseActivity {
         /**
          * 根据订单状态，设置哪些操作功能按钮可以显示
          * */
-        private void setOperation(ViewHolder holder, final Order order) {
+        private void setOperation(ViewHolder holder, final Order order, final int position) {
 
             boolean check = false;
             boolean receive = false;
@@ -593,7 +630,7 @@ public class TransportOrderManageActivity extends BaseActivity {
                 holder.check.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onOperationClick(v, order);
+                        onOperationClick(v, order, position);
                     }
                 });
             }
@@ -602,7 +639,7 @@ public class TransportOrderManageActivity extends BaseActivity {
                 holder.receive.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onOperationClick(v, order);
+                        onOperationClick(v, order, position);
                     }
                 });
             }
@@ -611,7 +648,7 @@ public class TransportOrderManageActivity extends BaseActivity {
                 holder.refuse.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onOperationClick(v, order);
+                        onOperationClick(v, order, position);
                     }
                 });
             }
@@ -620,7 +657,7 @@ public class TransportOrderManageActivity extends BaseActivity {
                 holder.cancel.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onOperationClick(v, order);
+                        onOperationClick(v, order, position);
                     }
                 });
             }
@@ -629,7 +666,7 @@ public class TransportOrderManageActivity extends BaseActivity {
                 holder.dispatch.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onOperationClick(v, order);
+                        onOperationClick(v, order, position);
                     }
                 });
             }

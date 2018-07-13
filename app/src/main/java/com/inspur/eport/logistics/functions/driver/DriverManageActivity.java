@@ -23,7 +23,6 @@ import com.inspur.eport.logistics.R;
 import com.inspur.eport.logistics.bean.Driver;
 import com.inspur.eport.logistics.bean.Team;
 import com.inspur.eport.logistics.functions.truck.TruckManageActivity;
-import com.inspur.eport.logistics.server.TestData;
 import com.inspur.eport.logistics.server.WebRequest;
 import com.inspur.eport.logistics.utils.MyToast;
 import com.scwang.smartrefresh.header.MaterialHeader;
