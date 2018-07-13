@@ -102,11 +102,6 @@ public class LoginActivity extends BaseActivity {
             return;
         }
 
-        if (TextUtils.isEmpty(User.getUser().getToken())) {
-            MyToast.show(LoginActivity.this, "登录失败，请重试");
-            return;
-        }
-
         String ssoInfo = EncryptUtil.getEncryptInfo(
                 acc,
                 pwd,
