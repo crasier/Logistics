@@ -1,8 +1,9 @@
 package com.eport.logistics.utils;
 
 import android.content.Context;
-import android.view.Gravity;
-import android.widget.Toast;
+import android.util.Log;
+
+import com.mic.etoast2.Toast;
 
 public class MyToast {
 
@@ -13,13 +14,22 @@ public class MyToast {
     }
 
     public static void show(Context ctx, String resStr) {
-        if (mToast == null) {
-            mToast = Toast.makeText(ctx, resStr, Toast.LENGTH_SHORT);
-            mToast.setGravity(Gravity.CENTER, 0, 0);//设置toast显示的位置，这是居中
-            mToast.setDuration(Toast.LENGTH_SHORT);//设置toast显示的时长
-        }else {
-            mToast.setText(resStr);//设置文本
+        try {
+            mToast = Toast.makeText(ctx, resStr, android.widget.Toast.LENGTH_SHORT);
+            mToast.show();
+        }catch (Exception e) {
+            e.printStackTrace();
+            Log.e("toast", "show failed reason = " + e);
         }
-        mToast.show();//展示toast
+    }
+
+    public static void cancel() {
+        if (mToast != null) {
+            try {
+                mToast.cancel();
+            }catch (Exception e) {
+                Log.e("toast", "cancel failed reason = " + e);
+            }
+        }
     }
 }

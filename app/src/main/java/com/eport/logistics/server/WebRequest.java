@@ -1,23 +1,22 @@
 package com.eport.logistics.server;
 
-import android.net.LocalServerSocket;
+import android.animation.TypeEvaluator;
 import android.text.TextUtils;
+import android.util.EventLog;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.eport.logistics.Constants;
 import com.eport.logistics.bean.EventBean;
 import com.eport.logistics.server.retrofit.ApiManager;
 import com.eport.logistics.server.retrofit.TokenLoader;
 import com.eport.logistics.server.retrofit.Urls;
-import com.eport.logistics.utils.EncryptUtil;
 
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
+import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,9 +26,7 @@ import java.util.concurrent.Callable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
@@ -69,11 +66,10 @@ public class WebRequest {
 
     private List<Observable> observables = new LinkedList<>();
 
-    private void withToken(final String url, final Observer observer, final RType type, final RMethod method, final RequestBody... body) {
+    public void withToken(final String url, final Observer observer, final RType type, final RMethod method, final RequestBody... body) {
         final Observable<?> observable = Observable.defer(new Callable<ObservableSource<String>>() {
             @Override
             public ObservableSource<String> call() throws Exception {
-                Log.e(TAG, "111111111   ");
                 String token = TokenLoader.getInstance().getCacheToken();
                 Log.e(TAG, "111111111   token = "+token);
                 return Observable.just(token);
@@ -123,7 +119,13 @@ public class WebRequest {
                             ob.unsubscribeOn(Schedulers.io());
                         }
                         observables.clear();
-                        EventBus.getDefault().post(new EventBean(EventBean.TAG_SESSION_INVALID));
+                        EventBean bean = new EventBean(EventBean.TAG_SESSION_INVALID);
+                        bean.setUrl(url);
+                        bean.setObserver(observer);
+                        bean.setType(type);
+                        bean.setMethod(method);
+                        bean.setBody(body);
+                        EventBus.getDefault().post(bean);
                         return Observable.error(new Throwable("登录过期，正在重新登录..."));
                     }
                 }catch (Exception e) {
@@ -172,17 +174,6 @@ public class WebRequest {
 //                .observeOn(AndroidSchedulers.mainThread())
 //                .subscribe(observer);
 
-        String ssoInfo = EncryptUtil.getEncryptInfo(
-                name,
-                pwd,
-                null,
-                pfxInputStream,
-                "62236644");
-
-        Log.e("getEncryptInfo", "after encrypt: ssoInfo = "+ssoInfo);
-        String url = String.format(Locale.CHINA, Constants.URL_LOGIN_CAS,
-                "sso",
-                "kmtPNcJqdsMUtBevloOLU6LsjR8l7h8T3TjcQJxOCqAm49HYy2pEX3KilIrv7EoGov047u3j5cVMJhgvCD1RxSGlQRHcuxzN3bnfm6bmfoZe%2BNtY1q0r%2B77Us2M7jW0P4497IGqzon%2B2UNgqxdwS%2BQR%2FfAviK7Sz8bUWcf9m%2BgwzSjLOG9Fu7MKuImxQrmkndSz2vqrjoVlYtzE5VZE43f%2BdRxliV3sLItmPLeOof%2FEEliWuJAGAwvgRX0YhszcsPaLpsC0cqtfGhhJTTV%2Bd%2FUHNpFSixaF1vR3TAwBhovQzYneIe50uBx3P%2FjLC6vwrzHG6yPHSzeoZ%2FH7uY%2B6X3Q%3D%3D");
 
         ApiManager.getInstance().getRetrofitService().login("https://test.sditds.gov.cn:5565/cas/login?service=http://test.sditds.gov.cn:81/cargo/security/login&theme=sso_cargo&cert_alias=sso&encrypt_info=kmtPNcJqdsMUtBevloOLU6LsjR8l7h8T3TjcQJxOCqAm49HYy2pEX3KilIrv7EoGov047u3j5cVMJhgvCD1RxSGlQRHcuxzN3bnfm6bmfoZe%2BNtY1q0r%2B77Us2M7jW0P4497IGqzon%2B2UNgqxdwS%2BQR%2FfAviK7Sz8bUWcf9m%2BgwzSjLOG9Fu7MKuImxQrmkndSz2vqrjoVlYtzE5VZE43f%2BdRxliV3sLItmPLeOof%2FEEliWuJAGAwvgRX0YhszcsPaLpsC0cqtfGhhJTTV%2Bd%2FUHNpFSixaF1vR3TAwBhovQzYneIe50uBx3P%2FjLC6vwrzHG6yPHSzeoZ%2FH7uY%2B6X3Q%3D%3D%2BNtY1q0r%2B77Us2M7jW0P4497IGqzon%2B2UNgqxdwS%2BQR%2FfAviK7Sz8bUWcf9m%2BgwzSjLOG9Fu7MKuImxQrmkndSz2vqrjoVlYtzE5VZE43f%2BdRxliV3sLItmPLeOof%2FEEliWuJAGAwvgRX0YhszcsPaLpsC0cqtfGhhJTTV%2Bd%2FUHNpFSixaF1vR3TAwBhovQzYneIe50uBx3P%2FjLC6vwrzHG6yPHSzeoZ%2FH7uY%2B6X3Q%3D%3D")
                 .subscribeOn(Schedulers.io())

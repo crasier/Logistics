@@ -53,11 +53,8 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
     implementation files('libs/fastjson-1.2.47.jar')
     implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation 'com.github.Blincheng:EToast2:v2.1.0'
     //下拉刷新
     implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.0.5.1'
     implementation 'com.scwang.smartrefresh:SmartRefreshHeader:1.0.5.1'
-    implementation files('libs/bcprov-jdk15on-154.jar')
-    implementation files('libs/commons-codec-1.9.jar')
-    implementation files('libs/commons-io-2.4.jar')
-    implementation files('libs/commons-lang-2.6.jar')
 }

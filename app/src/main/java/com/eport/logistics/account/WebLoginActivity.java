@@ -3,6 +3,7 @@ package com.eport.logistics.account;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.http.SslError;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.SslErrorHandler;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -52,9 +54,31 @@ public class WebLoginActivity extends BaseActivity{
         mWebView.setWebViewClient(new MyWebViewClient());
         mWebView.setWebChromeClient(new MyWebChromeClient());
 
+        createDialog(true);
         mWebView.loadUrl(Constants.URL_LOGIN);
 //        mWebView.loadUrl("http://www.baidu.com");
 //        mWebView.loadUrl("https://test.sditds.gov.cn:5565/cas/login?service=http://test.sditds.gov.cn:81/logistics/security/login");
+    }
+
+    private void autoSubmit() {
+        if (TextUtils.isEmpty(User.getUser().getAccount()) ||
+                TextUtils.isEmpty(User.getUser().getPassword())) {
+            return;
+        }
+        Log.e("autoSubmit", "shouldOverrideUrlLoading: auto login");
+        String jsStr =
+                "javascript:document.getElementById('username').value='"+User.getUser().getAccount()+"';" +
+                "document.getElementById('password').value='"+User.getUser().getPassword()+"';"+
+//                "document.getElementByName('submit')[0].value='hello world';";
+                "document.getElementById('fm1').elements[5].click();";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsStr, new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                    Log.e("autoSubmit", "onReceiveValue: "+value);
+                }
+            });
+        }
     }
 
     private class MyWebViewClient extends WebViewClient {
@@ -90,30 +114,35 @@ public class WebLoginActivity extends BaseActivity{
                     mWebView.loadUrl(Constants.URL_LOGIN);
                     return false;
                 }
-                dismissDialog();
                 User.getUser().setToken(token);
-                Prefer.getInstance().putString(Constants.KEY_PREFER_TOKEN, token);
+                User.getUser().setAccount("cargo");
+                User.getUser().setPassword("666666");
+//                Prefer.getInstance().putString(Constants.KEY_PREFER_TOKEN, token);
                 Intent intent = new Intent(WebLoginActivity.this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 mWebView.clearCache(true);
                 mWebView.clearHistory();
                 mWebView.destroy();
+                dismissDialog();
                 finish();
                 return false;
             }
+
             mWebView.loadUrl(url);
             return true;
         }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            createDialog(true);
             super.onPageStarted(view, url, favicon);
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            if (url.equals(Constants.URL_LOGIN)) {
+                autoSubmit();
+            }
             dismissDialog();
             setTopBar(R.drawable.icon_back, view.getTitle(), 0);
             super.onPageFinished(view, url);

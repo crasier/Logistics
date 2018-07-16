@@ -76,9 +76,16 @@ public class MineFragment extends BaseFragment {
                 case R.id.mine_feedback:
                     MyToast.show(mActivity, "意见反馈");
                     User.getUser().setToken("123123123reqwerqe");
+                    CookieManager.getInstance().removeAllCookie();
                     break;
                 case R.id.mine_logout:
-                    Prefer.getInstance().putString(Constants.KEY_PREFER_TOKEN, "");
+//                    Prefer.getInstance().putString(Constants.KEY_PREFER_TOKEN, "");
+                    Prefer.getInstance().putString(Constants.KEY_PREFER_USER, "");
+                    Prefer.getInstance().putString(Constants.KEY_PREFER_PWD, "");
+
+                    User.getUser().setAccount(null);
+                    User.getUser().setPassword(null);
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
                             @Override

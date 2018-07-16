@@ -23,6 +23,7 @@
         <activity android:name=".account.WebLoginActivity"
             android:theme="@style/TransTheme"
             android:screenOrientation="portrait"
+            android:launchMode="singleTop"
             android:configChanges="layoutDirection|keyboardHidden|orientation"/>
         <activity android:name=".account.LoginActivity"
                   android:theme="@style/TransTheme"

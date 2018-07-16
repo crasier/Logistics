@@ -12,4 +12,9 @@
     <include layout="@layout/layout_top"
         android:id="@+id/base_top"
         android:visibility="gone"/>
+    <WebView
+        android:id="@+id/base_webview"
+        android:visibility="gone"
+        android:layout_width="10dp"
+        android:layout_height="10dp"/>
 </LinearLayout>
