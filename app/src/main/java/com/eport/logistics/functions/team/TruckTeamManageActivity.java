@@ -120,8 +120,6 @@ public class TruckTeamManageActivity extends BaseActivity{
 
         if (teamsList == null) {
             teamsList = new ArrayList<>();
-        }else {
-            teamsList.clear();
         }
 
         requestDataListFinish = false;
@@ -151,6 +149,9 @@ public class TruckTeamManageActivity extends BaseActivity{
             dismissDialog();
             mAdapter.notifyDataSetChanged();
             mEmpty.setVisibility(teamsList != null && teamsList.size() > 0 ? View.GONE : View.VISIBLE);
+            if (teamsList == null || teamsList.size() == 0) {
+                footView.setText("");
+            }
         }
     }
 

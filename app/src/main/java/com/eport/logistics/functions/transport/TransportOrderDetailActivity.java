@@ -51,61 +51,80 @@ public class TransportOrderDetailActivity extends BaseActivity {
     @BindView(R.id.lister)
     protected ListView mLister;
 
-    private WebView mContent;
+//    private WebView mContent;
 
 
     @Override
     protected void initUI(Bundle savedInstanceState) {
 
-        addContentView(R.layout.view_webview);
-        mContent = findViewById(R.id.webview);
-        mContent.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return false;
-            }
-        });
-        WebSettings webSettings = mContent.getSettings();
-//        addContentView(R.layout.layout_order_transport_detail);
+//        addContentView(R.layout.view_webview);
+//        mContent = findViewById(R.id.webview);
+//        mContent.setWebViewClient(new WebViewClient() {
+//            @Override
+//            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+//                return false;
+//            }
+//        });
+//        WebSettings webSettings = mContent.getSettings();
+        addContentView(R.layout.layout_order_transport_detail);
         // 让WebView能够执行javaScript
-        webSettings.setJavaScriptEnabled(true);
-        // 让JavaScript可以自动打开windows
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-        // 设置缓存
-        webSettings.setAppCacheEnabled(true);
-        // 设置缓存模式,一共有四种模式
-        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        // 设置缓存路径
-//        webSettings.setAppCachePath("");
-        // 支持缩放(适配到当前屏幕)
-        webSettings.setSupportZoom(true);
-        // 将图片调整到合适的大小
-        webSettings.setUseWideViewPort(true);
-        // 支持内容重新布局,一共有四种方式
-        // 默认的是NARROW_COLUMNS
-        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-        // 设置可以被显示的屏幕控制
-        webSettings.setDisplayZoomControls(true);
-        // 设置默认字体大小
-        webSettings.setDefaultFontSize(12);
+//        webSettings.setJavaScriptEnabled(true);
+//        // 让JavaScript可以自动打开windows
+//        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+//        // 设置缓存
+//        webSettings.setAppCacheEnabled(true);
+//        // 设置缓存模式,一共有四种模式
+//        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+//        // 设置缓存路径
+////        webSettings.setAppCachePath("");
+//        // 支持缩放(适配到当前屏幕)
+//        webSettings.setSupportZoom(true);
+//        // 将图片调整到合适的大小
+//        webSettings.setUseWideViewPort(true);
+//        // 支持内容重新布局,一共有四种方式
+//        // 默认的是NARROW_COLUMNS
+//        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+//        // 设置可以被显示的屏幕控制
+//        webSettings.setDisplayZoomControls(true);
+//        // 设置默认字体大小
+//        webSettings.setDefaultFontSize(12);
 
 
         order = (Order) getIntent().getSerializableExtra("order");
-//        unbinder = ButterKnife.bind(this);
+        unbinder = ButterKnife.bind(this);
         setTopBar(R.drawable.icon_back, R.string.order_detail_title, 0);
-//        mInflater = LayoutInflater.from(this);
-//        mAdapter = new Adapter();
-//        mLister.setAdapter(mAdapter);
+        mInflater = LayoutInflater.from(this);
 
-//        mNo.setText(order.getBillNo());
-//        mDelegate.setText(order.getDelegate());
-//        mContact.setText(order.getBuyerCN());
-//        mAddress.setText(order.getAddress());
+        mNo.setText(order.getBillNo());
+        mDelegate.setText(order.getDelegate());
+        mContact.setText(order.getBuyerCN());
+        mAddress.setText(order.getAddress());
 
         getOrderDetail();
+        mAdapter = new Adapter();
+        mLister.setAdapter(mAdapter);
     }
 
     private void getOrderDetail() {
+
+        if (true) {
+
+            ArrayList<Order.Container> containers = new ArrayList<>();
+
+            for (int i = 0; i < 3; i++) {
+                Order.Container container = new Order.Container();
+                container.setNo("ZSXLU123457");
+                container.setSize("20");
+                container.setType("GP");
+                container.setDate("2018-08-"+(9+i));
+                container.setPlace("青岛中外运物流有限公司明港场站");
+
+                containers.add(container);
+            }
+            order.setContainers(containers);
+            return;
+        }
+
         WebRequest.getInstance().getOrderDetail(order.getId(), new Observer<String>() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -121,7 +140,7 @@ public class TransportOrderDetailActivity extends BaseActivity {
                 }
 
                 dismissDialog();
-                mContent.loadData(o, "text/html; charset=UTF-8", null);
+//                mContent.loadData(o, "text/html; charset=UTF-8", null);
             }
 
             @Override
@@ -149,8 +168,7 @@ public class TransportOrderDetailActivity extends BaseActivity {
         if (unbinder != null) {
             unbinder.unbind();
         }
-
-        mContent.destroy();
+//        mContent.destroy();
         finish();
     }
 

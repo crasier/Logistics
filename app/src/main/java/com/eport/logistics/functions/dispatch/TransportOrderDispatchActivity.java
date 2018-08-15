@@ -1,6 +1,9 @@
 package com.eport.logistics.functions.dispatch;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -116,6 +119,8 @@ public class TransportOrderDispatchActivity extends BaseActivity {
     private String forwarderName = "";
     private String fkForwardingId = "";
 
+    private String containerNo = "";//是否只针对某一个箱子进行派车
+
     private boolean requestDictsFinish = true;
     private boolean requestDataListFinish = true;
 
@@ -128,6 +133,7 @@ public class TransportOrderDispatchActivity extends BaseActivity {
 
         if (getIntent() != null) {
             fkForwardingId = getIntent().getStringExtra("fkForwardingId");
+            containerNo = getIntent().getStringExtra("containerNo");
         }
 
         addContentView(R.layout.layout_order_dispatch_activity);
@@ -148,7 +154,7 @@ public class TransportOrderDispatchActivity extends BaseActivity {
         driverAdapter = new DriverAdapter();
         truckAdapter = new TruckAdapter();
 
-        driverInput.setEnabled(false);
+//        driverInput.setEnabled(false);
         driverSpinner.setOnItemSelectedListener(onItemSelectedListener);
         truckSpinner.setOnItemSelectedListener(onItemSelectedListener);
 
@@ -211,8 +217,6 @@ public class TransportOrderDispatchActivity extends BaseActivity {
 
         if (ordersList == null) {
             ordersList = new ArrayList<>();
-        } else {
-            ordersList.clear();
         }
 
         getDicts();
@@ -237,6 +241,9 @@ public class TransportOrderDispatchActivity extends BaseActivity {
             dismissDialog();
             mAdapter.notifyDataSetChanged();
             mEmpty.setVisibility(ordersList != null && ordersList.size() > 0 ? View.GONE : View.VISIBLE);
+            if (ordersList == null || ordersList.size() == 0) {
+                footView.setText("");
+            }
         }
     }
 
@@ -461,12 +468,22 @@ public class TransportOrderDispatchActivity extends BaseActivity {
 
         for (int i = 0; i < ordersList.size(); i++) {
 
-            if (ordersList.get(i).isCanDispatch()) {
-                ordersList.get(i).setSpread(true);
+            DispatchOrder dor = ordersList.get(i);
+
+            if (dor.isCanDispatch()) {
+                dor.setSpread(true);
             }
 
-            if (operatingOrder != null && operatingOrder.getId().equals(ordersList.get(i).getId())) {
-                ordersList.get(i).setSpread(operatingOrder.isSpread());
+            if (operatingOrder != null && operatingOrder.getId().equals(dor.getId())) {
+                dor.setSpread(operatingOrder.isSpread());
+            }
+
+            if (!TextUtils.isEmpty(containerNo) && dor.getContainerNo().equals(containerNo)) {
+                dor.setSelected(true);
+                ordersList.clear();
+                ordersList.add(dor);
+                itemTotal = ordersList.size();
+                break;
             }
         }
 
@@ -589,7 +606,7 @@ public class TransportOrderDispatchActivity extends BaseActivity {
             delivTimeStart.append(order.getDelivTime()).append(",");
             appointTimes.append(order.getAppointTimeGet()).append(",");
             rtnAppointTimes.append(order.getAppointTimeRtn()).append(",");
-            oriBack.append(order.getOriBack()).append(",");
+            oriBack.append(TextUtils.isEmpty(order.getOriBack()) ? "1" : order.getOriBack()).append(",");
         }
 
         ids.deleteCharAt(ids.length() - 1);
@@ -708,6 +725,17 @@ public class TransportOrderDispatchActivity extends BaseActivity {
         mAdapter.notifyDataSetChanged();
     }
 
+    private void onItemLongClick(int position) {
+        try {
+            DispatchOrder order = ordersList.get(position);
+            ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            cm.setPrimaryClip(ClipData.newPlainText("billNo", order.getBillNo()));
+            MyToast.show(TransportOrderDispatchActivity.this, getString(R.string.bill_copy_clipboard)+" "+order.getBillNo());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void onCheckedChangeListener(boolean isChecked, int position) {
         Log.e(TAG, "onCheckedChangeListener: " + isChecked + "; position = " + position);
         ordersList.get(position).setSelected(isChecked);
@@ -770,7 +798,6 @@ public class TransportOrderDispatchActivity extends BaseActivity {
                 return convertView;
             }
 
-
             holder.arrow.setRotation(180);
             holder.child.setVisibility(View.VISIBLE);
 
@@ -798,6 +825,14 @@ public class TransportOrderDispatchActivity extends BaseActivity {
                 @Override
                 public void onClick(View v) {
                     onItemClick(position);
+                }
+            });
+
+            holder.top.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    onItemLongClick(position);
+                    return true;
                 }
             });
 
@@ -859,7 +894,7 @@ public class TransportOrderDispatchActivity extends BaseActivity {
          */
         private void setDeliverTime(final TextView view, final int position) {
             DispatchOrder order = ordersList.get(position);
-            view.setText(order.getDelivTime() == null ? "" : new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).
+            view.setText(order.getDelivTime() == null ? "" : new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).
                     format(new Date(order.getDelivTime())));
             if (order.isCanDispatch()) {
                 view.setOnClickListener(new View.OnClickListener() {
@@ -961,10 +996,19 @@ public class TransportOrderDispatchActivity extends BaseActivity {
          */
         private void setBackOrigin(Spinner view, final int position) {
             DispatchOrder order = ordersList.get(position);
+            view.setSelection(order.getOriBack() != null && order.getOriBack().equals("0") ? 1 : 0);//默认原车返回
             if (order.isCanDispatch()) {
-                view.setSelection(0);//默认原车返回
-            } else {
-                view.setSelection(order.getOriBack() != null && order.getOriBack().equals("1") ? 0 : 1);
+                view.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                        ordersList.get(position).setOriBack(pos == 0 ? "1" : "0");
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+//                    ordersList.get(position).setOriBack("1");
+                    }
+                });
             }
         }
 

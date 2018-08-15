@@ -229,18 +229,25 @@ public class TransportStateActivity extends BaseActivity {
 
             String transContent = "";
 
-            if (trans.getStatus().equals(Dicts.STATUS_5200)) {
-                transContent = getString(R.string.transport_status_5200);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5300)) {
-                transContent = getString(R.string.transport_status_5300);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5400)) {
-                transContent = getString(R.string.transport_status_5400);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5700)) {
-                transContent = getString(R.string.transport_status_5700);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5800)) {
-                transContent = getString(R.string.transport_status_5800);
-            }else if (trans.getStatus().equals(Dicts.STATUS_5900)) {
-                transContent = getString(R.string.transport_status_5900);
+            switch (trans.getStatus()) {
+                case Dicts.STATUS_5200:
+                    transContent = getString(R.string.transport_status_5200);
+                    break;
+                case Dicts.STATUS_5300:
+                    transContent = getString(R.string.transport_status_5300);
+                    break;
+                case Dicts.STATUS_5400:
+                    transContent = getString(R.string.transport_status_5400);
+                    break;
+                case Dicts.STATUS_5700:
+                    transContent = getString(R.string.transport_status_5700);
+                    break;
+                case Dicts.STATUS_5800:
+                    transContent = getString(R.string.transport_status_5800);
+                    break;
+                case Dicts.STATUS_5900:
+                    transContent = getString(R.string.transport_status_5900);
+                    break;
             }
 
             view.setText(transContent);

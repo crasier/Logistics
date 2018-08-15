@@ -21,8 +21,6 @@ import com.eport.logistics.BaseActivity;
 import com.eport.logistics.Codes;
 import com.eport.logistics.R;
 import com.eport.logistics.bean.Driver;
-import com.eport.logistics.bean.Team;
-import com.eport.logistics.functions.truck.TruckManageActivity;
 import com.eport.logistics.server.WebRequest;
 import com.eport.logistics.utils.MyToast;
 import com.scwang.smartrefresh.header.MaterialHeader;
@@ -31,8 +29,8 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -134,10 +132,9 @@ public class DriverManageActivity extends BaseActivity {
 
         if (driversList == null) {
             driversList = new ArrayList<>();
-        }else {
-            driversList.clear();
         }
 
+        pageNum = 1;
         getDataList(false);
     }
 
@@ -159,6 +156,9 @@ public class DriverManageActivity extends BaseActivity {
             dismissDialog();
             mAdapter.notifyDataSetChanged();
             mEmpty.setVisibility(driversList != null && driversList.size() > 0 ? View.GONE : View.VISIBLE);
+            if (driversList == null || driversList.size() == 0) {
+                footView.setText("");
+            }
         }
     }
 
@@ -230,19 +230,23 @@ public class DriverManageActivity extends BaseActivity {
 
         JSONArray dataArray = rootJson.getJSONObject("data").getJSONArray("rows");
         itemTotal = rootJson.getJSONObject("data").getInteger("total");
-        if (itemTotal == 0) {
-            pageNum = 1;
-        }else {
-            pageNum = driversList.size() / itemPerPage + 1;
-        }
 
         Log.e(TAG, "parseDataList: itemTotal = "+itemTotal+"; pageNum = "+pageNum);
 
+        List<Driver> driverArr = JSON.parseArray(dataArray.toJSONString(), Driver.class);
+
         if (add) {
-            driversList.addAll(JSON.parseArray(dataArray.toJSONString(), Driver.class));
+            driversList.addAll(driverArr);
         }else {
-            driversList = (ArrayList<Driver>) JSON.parseArray(dataArray.toJSONString(), Driver.class);
+            driversList = (ArrayList<Driver>) driverArr;
         }
+
+        if (itemTotal == 0) {
+            pageNum = 1;
+        }else {
+            pageNum = driversList.size() / itemPerPage;
+        }
+        Log.e(TAG, "20180717 parseDataList: remoteSize = "+driverArr.size()+"; localSize = "+driversList.size());
 
         for (int i = 0; i < driversList.size(); i++) {
             if (operatingDriver != null && operatingDriver.getId().equals(driversList.get(i).getId())) {

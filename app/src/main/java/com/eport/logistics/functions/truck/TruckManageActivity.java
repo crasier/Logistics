@@ -128,9 +128,9 @@ public class TruckManageActivity extends BaseActivity {
 
         if (trucksList == null) {
             trucksList = new ArrayList<>();
-        }else {
-            trucksList.clear();
         }
+
+        pageNum = 1;
 
         getDataList(false);
     }
@@ -153,6 +153,9 @@ public class TruckManageActivity extends BaseActivity {
             dismissDialog();
             mAdapter.notifyDataSetChanged();
             mEmpty.setVisibility(trucksList != null && trucksList.size() > 0 ? View.GONE : View.VISIBLE);
+            if (trucksList == null || trucksList.size() == 0) {
+                footView.setText("");
+            }
         }
     }
 
@@ -227,7 +230,7 @@ public class TruckManageActivity extends BaseActivity {
 //        pageNum = rootJson.getJSONObject("data").getInteger("pageNum");
 //        pageSize = rootJson.getJSONObject("data").getInteger("size");
         itemTotal = rootJson.getJSONObject("data").getInteger("total");
-        pageNum = trucksList.size() / itemPerPage + 1;
+
         Log.e(TAG, "parseDataList: pageNum = "+pageNum);
 
 
@@ -236,6 +239,8 @@ public class TruckManageActivity extends BaseActivity {
         }else {
             trucksList = (ArrayList<Truck>) JSON.parseArray(dataArray.toJSONString(), Truck.class);
         }
+
+        pageNum = trucksList.size() / itemPerPage;
 
         for (int i = 0; i < trucksList.size(); i++) {
             if (operatingTruck != null && operatingTruck.getId().equals(trucksList.get(i).getId())) {

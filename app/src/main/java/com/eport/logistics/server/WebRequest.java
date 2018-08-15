@@ -189,15 +189,17 @@ public class WebRequest {
     /**
      * 获取主界面功能菜单
      * */
-    public void getMenu(Observer observer) {
-        String url = "http://test.sditds.gov.cn:81/logistics/menu/getMenu";
+    public void getMenu(Observer<?> observer) {
+//        String url = "http://test.sditds.gov.cn:81/logistics/menu/getMenu";
+        String url = String.format(Locale.CHINA, "%s/logistics/menu/getMenu",
+                Urls.URL_SERVER_BASE);
         withToken(url, observer, RType.String, RMethod.GET);
     }
 
     /**
      * 获取状态码和状态信息
      * */
-    public void getDicts(String dictCode, Observer observer) {
+    public void getDicts(String dictCode, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/dict/getDicts?" +
                 "dictCode=%s" +
                 "&_=%s",
@@ -213,7 +215,7 @@ public class WebRequest {
      * */
     public void getOrderList(int pageNum, int pageSize, String billNo, String forwardName,
                              String consigneeCName, String delivTimeStart, String delivTimeEnd,
-                             String flowStatus, Observer observer) {
+                             String flowStatus, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/forwarder/listMotoForOrdData?" +
                         "pageNum=%s" +
                         "&pageSize=%s" +
@@ -241,7 +243,7 @@ public class WebRequest {
     /**
      * 获取订单详细信息
      * */
-    public void getOrderDetail(String id, Observer observer) {
+    public void getOrderDetail(String id, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/forwarder/motorcade/detail?" +
                         "forwardingId=%s",
                 Urls.URL_SERVER_BASE,
@@ -253,7 +255,7 @@ public class WebRequest {
     /**
      * 拒绝/接受订单,5510 拒绝, 5520 接受, 5530 撤销
      * */
-    public void modifyOrderStatus(String id, String status, Observer observer) {
+    public void modifyOrderStatus(String id, String status, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/forwarder/changeMotoForOrdStatus?" +
                         "id=%s" +
                         "&flowStatus=%s",
@@ -269,7 +271,7 @@ public class WebRequest {
      */
     public void getOrderDispatchList(int pageNum, int pageSize, String billNo, String delivPlaceName,
                               String rtnPlaceName, String flowStatus, String consigneeCName,
-                              String forwarderName, String fkForwardingId, Observer observer) {
+                              String forwarderName, String fkForwardingId, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getDetailsList?" +
                         "pageNum=%s" +
                         "&pageSize=%s" +
@@ -299,7 +301,7 @@ public class WebRequest {
     /**
      * 获取司机列表
      * */
-    public void getDriverList(Observer observer) {
+    public void getDriverList(Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getDriverList",
                 Urls.URL_SERVER_BASE);
 
@@ -309,7 +311,7 @@ public class WebRequest {
     /**
      * 获取卡车列表
      * */
-    public void getTruckList(Observer observer) {
+    public void getTruckList(Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getTruckList",
                 Urls.URL_SERVER_BASE);
 
@@ -329,7 +331,7 @@ public class WebRequest {
 
     public void dispatch(String fkForwardingId, String driverId, String truckNo, String getCtn,
                          String id, String fkReceiptId, String delivTimeStart, String appointTimes,
-                         String rtnAppointTimes, String oriBack, Observer observer) {
+                         String rtnAppointTimes, String oriBack, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/dispatchTruck?" +
                         "fkForwardingId=%s" +
                         "&driverId=%s" +
@@ -361,7 +363,7 @@ public class WebRequest {
      */
     public void getDispatchList(int pageNum, int pageSize, String billNo,
                                 String forwardName, String consigneeCName, String delivTimeStart,
-                                String delivTimeEnd, String flowStatus, String oriBack, Observer observer) {
+                                String delivTimeEnd, String flowStatus, String oriBack, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/listData?" +
                         "pageNum=%s" +
                         "&pageSize=%s" +
@@ -394,7 +396,7 @@ public class WebRequest {
     public void getTeamList(int pageNum, int pageSize, String contact,
                             String motorcadeCode, String motorcadeName, String chiAccount,
                             String accountName, String cardId, String nick,
-                            Observer observer) {
+                            Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/listData?" +
                         "pageNum=%s" +
                         "&pageSize=%s" +
@@ -425,7 +427,7 @@ public class WebRequest {
      * 修改车队账号启用状态
      * @param status 状态：0 停用，1 启用
      * */
-    public void modifyTeamUsable(String motorcadeStaffId, int status, Observer observer) {
+    public void modifyTeamUsable(String motorcadeStaffId, int status, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/changeInUseStatus?" +
                         "enteMotorcadeStaffId=%s" +
                         "&inUse=%s" +
@@ -444,7 +446,7 @@ public class WebRequest {
      * */
     public void modifyTeamInfo(String staffId, String motorcadeCode, String motorcadeName, String contacter, String truckNo,
                                String chiAccount, String password, String cardId, String accountCName, String nick,
-                               String phone, boolean add, Observer observer) {
+                               String phone, boolean add, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/%s?" +
                         "staffId=%s" +
                         "&motorcadeCode=%s" +
@@ -478,7 +480,7 @@ public class WebRequest {
      * 获取车辆信息列表
      * */
     public void getTruckList(int pageNum, int pageSize, String truckNo, String truckType,
-                             String drivingLicNo, String carryCap, Observer observer) {
+                             String drivingLicNo, String carryCap, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/truck/listData?" +
                         "pageNumber=%s" +
                         "&pageSize=%s" +
@@ -502,7 +504,7 @@ public class WebRequest {
     /**
      * 设置车辆是否可用
      * */
-    public void modifyTruckUsable(String id, String status, Observer observer) {
+    public void modifyTruckUsable(String id, String status, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/truck/changeInUseStatus?" +
                         "id=%s" +
                         "&truckStatus=%s",
@@ -520,7 +522,7 @@ public class WebRequest {
      * */
     public void modifyTruckInfo(String id, String fkMotorcadeId, String motorcadeCode,
                                 String truckNo, String drivingLicNo, String truckType,
-                                String carryCap, Observer observer) {
+                                String carryCap, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/truck/save?" +
                 "id=%s" +
                 "&fkMotorcadeId=%s" +
@@ -547,7 +549,7 @@ public class WebRequest {
     public void getDriverList(int pageNum, int pageSize,
                               String chiAccount, String accountCName, String idCardNo,
                               String phone, String nickName, String truckNo,
-                              String fkMotorcadeId, String staffType, Observer observer) {
+                              String fkMotorcadeId, String staffType, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/staff/listData?" +
                         "pageNumber=%s" +
                         "&pageSize=%s" +
@@ -579,7 +581,7 @@ public class WebRequest {
     /**
      * 修改司机是否可用状态
      * */
-    public void modifyDriverUsable(String id, String fkUserId, String status, Observer observer) {
+    public void modifyDriverUsable(String id, String fkUserId, String status, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/staff/changeInUseStatus?" +
                         "id=%s" +
                         "&fkUserId=%s" +
@@ -599,7 +601,7 @@ public class WebRequest {
      * */
     public void modifyDriverInfo(String id, String fkMotorcadeId, String chiAccount, String chiPassword,
                                  String accountCName, String cardNo, String phone, String nick, String truckNo,
-                                 Observer observer) {
+                                 Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/motorcade/staff/save?" +
                         "id=%s" +
                         "&fkMotorcadeId=%s" +
@@ -625,19 +627,45 @@ public class WebRequest {
     }
 
     /**
-     * 获取预约
-     * */
-
-    /**
      * 物流状态跟踪
      * */
-    public void getStatusRecord(String billNo, Observer observer) {
+    public void getStatusRecord(String billNo, Observer<?> observer) {
         String url = String.format(Locale.CHINA, "%s/logistics/logisticsState/getStatusRecord?" +
                         "billNo=%s" +
                         "&_=%s",
                 Urls.URL_SERVER_BASE,
                 billNo,
                 Calendar.getInstance().getTimeInMillis());
+
+        withToken(url, observer, RType.JSONObject, RMethod.GET);
+    }
+
+    /**
+     * 预约提箱
+     * */
+    public void containerGetAppoint(String ids, long millis, Observer<?> observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/motorcade/dispatchAppoint?" +
+                        "dispatchIds=%s" +
+                        "&type=1" +
+                        "&_=%d",
+                Urls.URL_SERVER_BASE,
+                ids,
+                millis);
+
+        withToken(url, observer, RType.JSONObject, RMethod.GET);
+    }
+
+    /**
+     * 预约还箱
+     * */
+    public void containerRtnAppoint(String ids, long millis, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/motorcade/dispatchAppoint?" +
+                        "dispatchIds=%s" +
+                        "&type=2" +
+                        "&_=%d",
+                Urls.URL_SERVER_BASE,
+                ids,
+                millis);
 
         withToken(url, observer, RType.JSONObject, RMethod.GET);
     }

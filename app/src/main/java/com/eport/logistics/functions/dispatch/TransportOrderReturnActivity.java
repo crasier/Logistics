@@ -110,6 +110,8 @@ public class TransportOrderReturnActivity extends BaseActivity {
     private String forwarderName = "";
     private String fkForwardingId = "";
 
+    private String containerNo = "";//是否只针对某一个箱子进行派车
+
     private DispatchFloatingWindow floatingWindow;
     private DispatchDialog dispatchDialog;
 
@@ -121,6 +123,7 @@ public class TransportOrderReturnActivity extends BaseActivity {
     protected void initUI(Bundle savedInstanceState) {
         if (getIntent() != null) {
             fkForwardingId = getIntent().getStringExtra("fkForwardingId");
+            containerNo = getIntent().getStringExtra("containerNo");
         }
         addContentView(R.layout.layout_order_dispatch_activity);
         unbinder = ButterKnife.bind(this);
@@ -139,7 +142,7 @@ public class TransportOrderReturnActivity extends BaseActivity {
         driverAdapter = new DriverAdapter();
         truckAdapter = new TruckAdapter();
 
-        driverInput.setEnabled(false);
+//        driverInput.setEnabled(false);
 
         driverSpinner.setOnItemSelectedListener(onItemSelectedListener);
         truckSpinner.setOnItemSelectedListener(onItemSelectedListener);
@@ -191,8 +194,6 @@ public class TransportOrderReturnActivity extends BaseActivity {
 
         if (ordersList == null) {
             ordersList = new ArrayList<>();
-        } else {
-            ordersList.clear();
         }
 
         getDicts();
@@ -425,12 +426,22 @@ public class TransportOrderReturnActivity extends BaseActivity {
 
         for (int i = 0; i < ordersList.size(); i++) {
 
-            if (ordersList.get(i).isCanDispatchReturn()) {
-                ordersList.get(i).setSpread(true);
+            DispatchOrder dor = ordersList.get(i);
+
+            if (dor.isCanDispatchReturn()) {
+                dor.setSpread(true);
             }
 
-            if (operatingOrder != null && operatingOrder.getId().equals(ordersList.get(i).getId())) {
-                ordersList.get(i).setSpread(operatingOrder.isSpread());
+            if (operatingOrder != null && operatingOrder.getId().equals(dor.getId())) {
+                dor.setSpread(operatingOrder.isSpread());
+            }
+
+            if (!TextUtils.isEmpty(containerNo) && dor.getContainerNo().equals(containerNo)) {
+                dor.setSelected(true);
+                ordersList.clear();
+                ordersList.add(dor);
+                itemTotal = ordersList.size();
+                break;
             }
         }
 

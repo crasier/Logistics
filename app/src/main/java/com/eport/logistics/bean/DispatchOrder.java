@@ -58,7 +58,7 @@ public class DispatchOrder implements Serializable{
     private String fkReceiptId;
     @JSONField(name = "RTN_APPOINT_TIME")
     private String appointTimeRtn;
-
+    @JSONField(name = "APPOINT_TIME")
     private String appointTimeGet;
 
     @JSONField(name = "TRANS_STATUS")//预约提箱
@@ -356,7 +356,8 @@ public class DispatchOrder implements Serializable{
         if (TextUtils.isEmpty(getStatus())) {
             return false;
         }
-        return getStatus().equals(Dicts.STATUS_5520) || getStatus().equals(Dicts.STATUS_5550);
+        return getStatus().equals(Dicts.STATUS_5520) || getStatus().equals(Dicts.STATUS_5550)
+                || getStatus().equals(Dicts.STATUS_5600);
     }
 
     /**

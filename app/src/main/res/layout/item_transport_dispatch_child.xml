@@ -141,7 +141,9 @@
             android:id="@+id/appoint_time_get"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
-            android:minWidth="150dp"
+            android:minWidth="180dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
             android:textSize="@dimen/text_small"
             android:gravity="center_vertical"
             android:layout_gravity="center_vertical"
@@ -155,6 +157,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="32dp"
+        android:layout_marginTop="2dp"
         android:orientation="horizontal">
         <TextView
             android:layout_width="90dp"
@@ -167,7 +170,9 @@
             android:id="@+id/time_deliver"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
-            android:minWidth="150dp"
+            android:minWidth="180dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
             android:textSize="@dimen/text_small"
             android:gravity="center_vertical"
             android:layout_gravity="center"
@@ -181,6 +186,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="32dp"
+        android:layout_marginTop="2dp"
         android:orientation="horizontal">
         <TextView
             android:layout_width="90dp"
@@ -193,7 +199,9 @@
             android:id="@+id/appoint_time_rtn"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
-            android:minWidth="150dp"
+            android:minWidth="180dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
             android:textSize="@dimen/text_small"
             android:gravity="center_vertical"
             android:layout_gravity="center"
@@ -207,6 +215,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="32dp"
+        android:layout_marginTop="2dp"
         android:orientation="horizontal">
         <TextView
             android:layout_width="90dp"
@@ -219,7 +228,7 @@
             android:id="@+id/back_origin"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:minWidth="150dp"
+            android:minWidth="180dp"
             android:textSize="@dimen/text_small"
             android:gravity="center_vertical"
             android:layout_gravity="center"

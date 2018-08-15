@@ -9,7 +9,6 @@ import com.eport.logistics.BaseActivity;
 import com.eport.logistics.Constants;
 import com.eport.logistics.R;
 import com.eport.logistics.account.LoginActivity;
-import com.eport.logistics.account.WebLoginActivity;
 import com.eport.logistics.bean.User;
 import com.eport.logistics.utils.MyToast;
 import com.eport.logistics.utils.Prefer;

@@ -41,9 +41,13 @@ public class LoginActivity extends BaseActivity {
         unbinder = ButterKnife.bind(this);
         if (!TextUtils.isEmpty(Prefer.getInstance().getString(Constants.KEY_PREFER_USER, ""))) {
             mAccountEt.setText(Prefer.getInstance().getString(Constants.KEY_PREFER_USER, ""));
+        }else {
+            mAccountEt.setText("cargo");
         }
         if (!TextUtils.isEmpty(Prefer.getInstance().getString(Constants.KEY_PREFER_PWD, ""))) {
             mPwdEt.setText(Prefer.getInstance().getString(Constants.KEY_PREFER_PWD, ""));
+        }else {
+            mPwdEt.setText("666666");
         }
     }
 

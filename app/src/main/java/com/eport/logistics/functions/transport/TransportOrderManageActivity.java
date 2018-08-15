@@ -1,5 +1,8 @@
 package com.eport.logistics.functions.transport;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.opengl.ETC1;
@@ -21,8 +24,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.eport.logistics.BaseActivity;
+import com.eport.logistics.Codes;
 import com.eport.logistics.R;
 import com.eport.logistics.bean.Dicts;
+import com.eport.logistics.bean.DispatchOrder;
 import com.eport.logistics.bean.Order;
 import com.eport.logistics.functions.dispatch.TransportOrderDispatchActivity;
 import com.eport.logistics.server.WebRequest;
@@ -142,8 +147,6 @@ public class TransportOrderManageActivity extends BaseActivity {
 
         if (ordersList == null) {
             ordersList = new ArrayList<>();
-        }else {
-            ordersList.clear();
         }
 
         requestDictsFinish = false;
@@ -176,6 +179,9 @@ public class TransportOrderManageActivity extends BaseActivity {
             dismissDialog();
             mAdapter.notifyDataSetChanged();
             mEmpty.setVisibility(ordersList != null && ordersList.size() > 0 ? View.GONE : View.VISIBLE);
+            if (ordersList == null || ordersList.size() == 0) {
+                footView.setText("");
+            }
         }
     }
 
@@ -336,6 +342,17 @@ public class TransportOrderManageActivity extends BaseActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case Codes.CODE_REQUEST_DISPATCH:
+                    getDataList(false);
+                    break;
+            }
+        }
+    }
+
     /**
      * 打开检索信息悬浮窗
      * */
@@ -417,7 +434,7 @@ public class TransportOrderManageActivity extends BaseActivity {
                 Intent dispatchIntent = new Intent(TransportOrderManageActivity.this, TransportOrderDispatchActivity.class);
                 dispatchIntent.putExtra("fkForwardingId", order.getId());
                 dispatchIntent.putExtra("menuName", getString(R.string.dispatch_title));
-                startActivity(dispatchIntent);
+                startActivityForResult(dispatchIntent, Codes.CODE_REQUEST_DISPATCH);
                 break;
         }
     }
@@ -469,6 +486,20 @@ public class TransportOrderManageActivity extends BaseActivity {
         mAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * 标题栏长按
+     * */
+    private void onItemLongClick(int position) {
+        try {
+            Order order = ordersList.get(position);
+            ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            cm.setPrimaryClip(ClipData.newPlainText("billNo", order.getBillNo()));
+            MyToast.show(TransportOrderManageActivity.this, getString(R.string.bill_copy_clipboard)+" "+order.getBillNo());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onBackPressed() {
         if (floatingWindowManager != null && floatingWindowManager.isShowing()) {
@@ -518,6 +549,10 @@ public class TransportOrderManageActivity extends BaseActivity {
             }
 
             setTitle(holder, position);
+            holder.delegate.setText(ordersList.get(position).getDelegate());
+            setStatus(holder.status, ordersList.get(position));
+            setOperation(holder, ordersList.get(position), position);
+
             if (!ordersList.get(position).isSpread()) {
                 holder.arrow.setRotation(0);
                 holder.child.setVisibility(View.GONE);
@@ -527,13 +562,9 @@ public class TransportOrderManageActivity extends BaseActivity {
 
             holder.arrow.setRotation(180);
             holder.child.setVisibility(View.VISIBLE);
-
             holder.buyer.setText(ordersList.get(position).getBuyerCN());
-            holder.delegate.setText(ordersList.get(position).getDelegate());
             holder.addr.setText(ordersList.get(position).getAddress());
             setContainer(holder.container, ordersList.get(position));
-            setStatus(holder.status, ordersList.get(position));
-            setOperation(holder, ordersList.get(position), position);
             return convertView;
         }
 
@@ -543,6 +574,14 @@ public class TransportOrderManageActivity extends BaseActivity {
                 @Override
                 public void onClick(View v) {
                     onItemClick(position);
+                }
+            });
+
+            holder.top.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    onItemLongClick(position);
+                    return true;
                 }
             });
         }

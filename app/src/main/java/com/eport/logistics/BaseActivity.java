@@ -1,5 +1,6 @@
 package com.eport.logistics;
 
+import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -232,6 +234,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
             settings.setSupportZoom(true);
             mWebView.setWebViewClient(new MyWebViewClient());
             mWebView.setWebChromeClient(new MyWebChromeClient());
+            mWebView.addJavascriptInterface(new JavaScript(), "log_cont");
         }
 
         mWebView.loadUrl(Constants.URL_LOGIN);
@@ -303,6 +306,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 autoSubmit();
                 needAutoLogin = false;
             }
+            getMsgFromHtml();
             super.onPageFinished(view, url);
         }
 
@@ -329,6 +333,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 "javascript:document.getElementById('username').value='"+User.getUser().getAccount()+"';" +
                         "document.getElementById('password').value='"+User.getUser().getPassword()+"';"+
                         "document.getElementById('fm1').submit.click();";
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mWebView.evaluateJavascript(jsStr, new ValueCallback<String>() {
                 @Override
@@ -336,6 +341,23 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                     Log.e("autoSubmit", "onReceiveValue: "+value);
                 }
             });
+        }else {
+            mWebView.loadUrl(jsStr);
+        }
+    }
+
+    private void getMsgFromHtml() {
+        String jsStr = "javascript:window.log_cont.dataFromHtml(document.getElementById('msg').innerHTML);";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsStr, new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                    Log.e("autoSubmit", "onReceiveValue msg = "+value);
+                }
+            });
+        }else {
+            mWebView.loadUrl(jsStr);
         }
     }
 
@@ -343,7 +365,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         if (result && mEvent != null) {
             WebRequest.getInstance().withToken(mEvent.getUrl(), mEvent.getObserver(),mEvent.getType(),mEvent.getMethod(),mEvent.getBody());
         }else {
-//            MyToast.show(this, R.string.login_fail);
+
         }
     }
 
@@ -380,5 +402,16 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         dismissDialog();
         freeMe();
         super.onDestroy();
+    }
+
+    private class JavaScript {
+
+        @JavascriptInterface
+        public void dataFromHtml(String content) {
+            Log.e(TAG, "dataFromHtml: " + content);
+            if (!TextUtils.isEmpty(content)) {
+                MyToast.show(BaseActivity.this, content);
+            }
+        }
     }
 }

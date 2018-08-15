@@ -28,6 +28,7 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -126,8 +127,6 @@ public class OrderContainerActivity extends BaseActivity {
 
         if (ordersList == null) {
             ordersList = new ArrayList<>();
-        } else {
-            ordersList.clear();
         }
 
         getDicts();
@@ -150,6 +149,9 @@ public class OrderContainerActivity extends BaseActivity {
             dismissDialog();
             mAdapter.notifyDataSetChanged();
             mEmpty.setVisibility(ordersList != null && ordersList.size() > 0 ? View.GONE : View.VISIBLE);
+            if (ordersList == null || ordersList.size() == 0) {
+                footView.setText("");
+            }
         }
     }
 
@@ -380,18 +382,93 @@ public class OrderContainerActivity extends BaseActivity {
     /**
      * 点击展开项中的功能按钮操作
      */
-    private void onOperationClick(View view, DispatchOrder order) {
+    private void onOperationClick(View view, final int position) {
 
-        operatingOrder = order;
+        operatingOrder = ordersList.get(position);
+
+        final long millis = Calendar.getInstance().getTimeInMillis();
 
         switch (view.getId()) {
-            case R.id.order_get_change:
-                Log.e(TAG, "onOperationClick check : " + order);
-                MyToast.show(OrderContainerActivity.this, "提箱改派");
+            case R.id.order_get_send://预约提箱发送
+                Log.e(TAG, "onOperationClick check : " + operatingOrder);
+//                MyToast.show(OrderContainerActivity.this, "预约提箱");
+                WebRequest.getInstance().containerGetAppoint(","+operatingOrder.getId(), millis, new Observer<JSONObject>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        createDialog(false);
+                    }
+
+                    @Override
+                    public void onNext(JSONObject object) {
+                        Log.e(TAG, "appoint onNext: "+object);
+                        if (object == null) {
+                            onError(new Throwable(getString(R.string.operation_failed)));
+                            return;
+                        }
+                        if (object.getBooleanValue("success")) {
+                            ordersList.get(position).setTransTime(millis);
+                            ordersList.get(position).setTransStatus("2");
+                            mAdapter.notifyDataSetChanged();
+                            MyToast.show(OrderContainerActivity.this, getString(R.string.operation_success));
+                        }else {
+                            onError(new Throwable(TextUtils.isEmpty(object.getString("failReason")) ?
+                            getString(R.string.operation_failed) : object.getString("failReason")));
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "appoint get onNext: "+e);
+                        MyToast.show(OrderContainerActivity.this, e == null || TextUtils.isEmpty(e.getMessage()) ?
+                            getString(R.string.operation_failed) : e.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dismissDialog();
+                    }
+                });
                 break;
-            case R.id.order_return_change:
-                Log.e(TAG, "onOperationClick receive : " + order);
-                MyToast.show(OrderContainerActivity.this, "还箱改派");
+            case R.id.order_return_send://预约还箱发送
+                Log.e(TAG, "onOperationClick receive : " + operatingOrder);
+//                MyToast.show(OrderContainerActivity.this, "预约还箱");
+
+                WebRequest.getInstance().containerRtnAppoint(","+operatingOrder.getId(), millis, new Observer<JSONObject>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        createDialog(false);
+                    }
+
+                    @Override
+                    public void onNext(JSONObject object) {
+                        Log.e(TAG, "appoint rtn onNext: "+object);
+                        if (object == null) {
+                            onError(new Throwable(getString(R.string.operation_failed)));
+                            return;
+                        }
+                        if (object.getBooleanValue("success")) {
+                            ordersList.get(position).setTransTimeRtn(millis);
+                            ordersList.get(position).setTransStatusRtn("2");
+                            mAdapter.notifyDataSetChanged();
+                            MyToast.show(OrderContainerActivity.this, getString(R.string.operation_success));
+                        }else {
+                            onError(new Throwable(TextUtils.isEmpty(object.getString("failReason")) ?
+                                    getString(R.string.operation_failed) : object.getString("failReason")));
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "appoint onNext: "+e);
+                        MyToast.show(OrderContainerActivity.this, e == null || TextUtils.isEmpty(e.getMessage()) ?
+                                getString(R.string.operation_failed) : e.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dismissDialog();
+                    }
+                });
                 break;
         }
     }
@@ -452,26 +529,27 @@ public class OrderContainerActivity extends BaseActivity {
                 }
             }
 
-            setTitle(holder, position);
+            DispatchOrder order = ordersList.get(position);
 
-            if (!ordersList.get(position).isSpread()) {
+            setTitle(holder, position);
+            //箱信息
+            setContainer(holder.container, order);
+            setStatus(holder.status, order);
+            setOperation(holder, position);
+
+            if (!order.isSpread()) {
                 holder.arrow.setRotation(0);
                 holder.child.setVisibility(View.GONE);
                 return convertView;
             }
 
-
             holder.arrow.setRotation(180);
             holder.child.setVisibility(View.VISIBLE);
-
-            DispatchOrder order = ordersList.get(position);
 
             setDate(holder.date, order);
             holder.buyer.setText(order.getBuyerCN());
             holder.delegate.setText(order.getForwarder());
             holder.addr.setText(order.getAddress());
-            //箱信息
-            setContainer(holder.container, order);
             //提箱
             setGetInfo(holder.deliGet, order);
             //还箱
@@ -481,10 +559,8 @@ public class OrderContainerActivity extends BaseActivity {
 //            } else {
 //                holder.originRtn.setText(order.getOriBack().equals("1") ? R.string.yes : R.string.no);
 //            }
-            setStatus(holder.status, order);
             setOrderGetStatus(holder.statusGet, order);
             setOrderRtnStatus(holder.statusRtn, order);
-            setOperation(holder, order);
             return convertView;
         }
 
@@ -519,8 +595,10 @@ public class OrderContainerActivity extends BaseActivity {
         private void setContainer(TextView view, DispatchOrder order) {
             StringBuilder builder = new StringBuilder();
 
-            builder.append(TextUtils.isEmpty(order.getContainerNo()) ? "" : order.getContainerNo())
-                    .append(TextUtils.isEmpty(order.getContainerSize()) || TextUtils.isEmpty(builder) ? "" : "\n")
+            builder.append(getString(R.string.dispatch_container_detail))
+                    .append(": ")
+                    .append(TextUtils.isEmpty(order.getContainerNo()) ? "" : order.getContainerNo())
+                    .append(TextUtils.isEmpty(order.getContainerSize()) || TextUtils.isEmpty(builder) ? "" : "  ")
                     .append(TextUtils.isEmpty(order.getContainerSize()) ? "" : order.getContainerSize())
                     .append(TextUtils.isEmpty(order.getContainerType()) ? "" : order.getContainerType());
 
@@ -563,7 +641,7 @@ public class OrderContainerActivity extends BaseActivity {
                 view.setText("");
                 return;
             }
-            view.setText(dictsMap.containsKey(order.getStatus()) ? dictsMap.get(order.getStatus()).getLabel() : "");
+            view.setText(dictsMap.containsKey(order.getFoStatus()) ? dictsMap.get(order.getFoStatus()).getLabel() : "");
         }
 
         //提箱预约发送状态
@@ -605,36 +683,39 @@ public class OrderContainerActivity extends BaseActivity {
         /**
          * 根据订单状态，设置哪些操作功能按钮可以显示
          */
-        private void setOperation(ViewHolder holder, final DispatchOrder order) {
+        private void setOperation(ViewHolder holder, final int position) {
+
+            DispatchOrder order = ordersList.get(position);
 
             boolean get = false;
             boolean rtn = false;
 
-            if (TextUtils.isEmpty(order.getStatus())) {
+            if (TextUtils.isEmpty(order.getFoStatus())) {
 
-            } else if (order.getStatus().equals(Dicts.STATUS_5400)) {//待派发
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5400)) {//待派发
                 get = true;
                 rtn = true;
-            } else if (order.getStatus().equals(Dicts.STATUS_5500)) {//已派发待接单
-            } else if (order.getStatus().equals(Dicts.STATUS_5510)) {//车队拒绝接单
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5500)) {//已派发待接单
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5510)) {//车队拒绝接单
 
-            } else if (order.getStatus().equals(Dicts.STATUS_5520)) {//已接单待派车
-            } else if (order.getStatus().equals(Dicts.STATUS_5525)) {//货代取消派发
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5520)) {//已接单待派车
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5525)) {//货代取消派发
 
-            } else if (order.getStatus().equals(Dicts.STATUS_5530)) {//车队撤销接单
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5530)) {//车队撤销接单
 
-            } else if (order.getStatus().equals(Dicts.STATUS_5550)) {//派车中
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5550)) {//派车中
                 get = true;
                 rtn = true;
-            } else if (order.getStatus().equals(Dicts.STATUS_5600)) {//已派车
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5600)) {//已派车
+                get = true;
                 rtn = true;
-            } else if (order.getStatus().equals(Dicts.STATUS_5650)) {//提箱中
-                rtn = true;
-            } else if (order.getStatus().equals(Dicts.STATUS_5700)) {//已提箱
-                rtn = true;
-            } else if (order.getStatus().equals(Dicts.STATUS_5750)) {//还箱中
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5650)) {//提箱中
+//                rtn = true;
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5700)) {//已提箱
+//                rtn = true;
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5750)) {//还箱中
 
-            } else if (order.getStatus().equals(Dicts.STATUS_5800)) {//已还箱
+            } else if (order.getFoStatus().equals(Dicts.STATUS_5800)) {//已还箱
 
             } else {
 
@@ -647,7 +728,7 @@ public class OrderContainerActivity extends BaseActivity {
                 holder.changeGet.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onOperationClick(v, order);
+                        onOperationClick(v, position);
                     }
                 });
             }
@@ -656,7 +737,7 @@ public class OrderContainerActivity extends BaseActivity {
                 holder.changeRtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onOperationClick(v, order);
+                        onOperationClick(v, position);
                     }
                 });
             }

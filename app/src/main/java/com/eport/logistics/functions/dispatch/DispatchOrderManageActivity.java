@@ -1,5 +1,8 @@
 package com.eport.logistics.functions.dispatch;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -34,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -143,8 +145,6 @@ public class DispatchOrderManageActivity extends BaseActivity {
 
         if (ordersList == null) {
             ordersList = new ArrayList<>();
-        } else {
-            ordersList.clear();
         }
 
         getDicts();
@@ -166,7 +166,12 @@ public class DispatchOrderManageActivity extends BaseActivity {
             mRefresher.finishRefresh(true);
             dismissDialog();
             mAdapter.notifyDataSetChanged();
-            mEmpty.setVisibility(ordersList != null && ordersList.size() > 0 ? View.GONE : View.VISIBLE);
+            if (ordersList == null || ordersList.size() == 0) {
+                mEmpty.setVisibility(View.VISIBLE);
+                footView.setText("");
+            }else {
+                mEmpty.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -406,6 +411,7 @@ public class DispatchOrderManageActivity extends BaseActivity {
 //                MyToast.show(DispatchOrderManageActivity.this, "提箱改派");
                 Intent dispatchIntent = new Intent(this, TransportOrderDispatchActivity.class);
                 dispatchIntent.putExtra("fkForwardingId", operatingOrder.getForwardingId());
+                dispatchIntent.putExtra("containerNo", operatingOrder.getContainerNo());
                 dispatchIntent.putExtra("menuName", getString(R.string.dispatch_redispatch_title));
                 startActivityForResult(dispatchIntent, Codes.CODE_REQUEST_DISPATCH);
                 break;
@@ -414,18 +420,36 @@ public class DispatchOrderManageActivity extends BaseActivity {
 //                MyToast.show(DispatchOrderManageActivity.this, "还箱改派");
                 Intent returnIntent = new Intent(this, TransportOrderReturnActivity.class);
                 returnIntent.putExtra("fkForwardingId", operatingOrder.getForwardingId());
+                returnIntent.putExtra("containerNo", operatingOrder.getContainerNo());
                 returnIntent.putExtra("menuName", getString(R.string.dispatch_return_title));
                 startActivityForResult(returnIntent, Codes.CODE_REQUEST_DISPATCH);
                 break;
         }
     }
 
+    /**
+     * 标题栏点击
+     * */
     private void onItemClick(int position) {
         DispatchOrder order = ordersList.get(position);
         order.setSpread(!order.isSpread());
         operatingOrder = order;
         ordersList.set(position, order);
         mAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * 标题栏长按
+     * */
+    private void onItemLongClick(int position) {
+        try {
+            DispatchOrder order = ordersList.get(position);
+            ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            cm.setPrimaryClip(ClipData.newPlainText("billNo", order.getBillNo()));
+            MyToast.show(DispatchOrderManageActivity.this, getString(R.string.bill_copy_clipboard)+" "+order.getBillNo());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -484,10 +508,15 @@ public class DispatchOrderManageActivity extends BaseActivity {
                     footView.setText(R.string.foot_no_more);
                 }
             }
+            DispatchOrder order = ordersList.get(position);
 
             setTitle(holder, position);
+            //箱信息
+            setContainer(holder.container, order);
+            setStatus(holder.status, order);
+            setOperation(holder, order);
 
-            if (!ordersList.get(position).isSpread()) {
+            if (!order.isSpread()) {
                 holder.arrow.setRotation(0);
                 holder.child.setVisibility(View.GONE);
                 return convertView;
@@ -497,14 +526,12 @@ public class DispatchOrderManageActivity extends BaseActivity {
             holder.arrow.setRotation(180);
             holder.child.setVisibility(View.VISIBLE);
 
-            DispatchOrder order = ordersList.get(position);
 
             setDate(holder.date, order);
             holder.buyer.setText(order.getBuyerCN());
             holder.delegate.setText(order.getForwarder());
             holder.addr.setText(order.getAddress());
-            //箱信息
-            setContainer(holder.container, order);
+
             //提箱
             setGetInfo(holder.deliGet, order);
             //还箱
@@ -514,8 +541,7 @@ public class DispatchOrderManageActivity extends BaseActivity {
             } else {
                 holder.originRtn.setText(order.getOriBack().equals("1") ? R.string.yes : R.string.no);
             }
-            setStatus(holder.status, order);
-            setOperation(holder, order);
+
             return convertView;
         }
 
@@ -525,6 +551,14 @@ public class DispatchOrderManageActivity extends BaseActivity {
                 @Override
                 public void onClick(View v) {
                     onItemClick(position);
+                }
+            });
+
+            holder.top.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    onItemLongClick(position);
+                    return true;
                 }
             });
         }
@@ -550,8 +584,10 @@ public class DispatchOrderManageActivity extends BaseActivity {
         private void setContainer(TextView view, DispatchOrder order) {
             StringBuilder builder = new StringBuilder();
 
-            builder.append(TextUtils.isEmpty(order.getContainerNo()) ? "" : order.getContainerNo())
-                    .append(TextUtils.isEmpty(order.getContainerSize()) || TextUtils.isEmpty(builder) ? "" : "\n")
+            builder.append(getString(R.string.dispatch_container_detail))
+                    .append(": ")
+                    .append(TextUtils.isEmpty(order.getContainerNo()) ? "" : order.getContainerNo())
+                    .append(TextUtils.isEmpty(order.getContainerSize()) || TextUtils.isEmpty(builder) ? "" : "  ")
                     .append(TextUtils.isEmpty(order.getContainerSize()) ? "" : order.getContainerSize())
                     .append(TextUtils.isEmpty(order.getContainerType()) ? "" : order.getContainerType());
 
@@ -594,7 +630,58 @@ public class DispatchOrderManageActivity extends BaseActivity {
                 view.setText("");
                 return;
             }
-            view.setText(dictsMap.containsKey(order.getStatus()) ? dictsMap.get(order.getStatus()).getLabel() : "");
+            if (TextUtils.isEmpty(order.getStatus())) {
+                view.setText("");
+            }else if (dictsMap.containsKey(order.getStatus())) {
+                view.setText(dictsMap.get(order.getStatus()).getLabel());
+            }else {
+                switch (order.getStatus()) {
+                    case Dicts.STATUS_5200:
+                        view.setText(R.string.transport_status_5200);
+                        break;
+                    case Dicts.STATUS_5300:
+                        view.setText(R.string.transport_status_5300);
+                        break;
+                    case Dicts.STATUS_5400:
+                        view.setText(R.string.transport_status_5400);
+                        break;
+                    case Dicts.STATUS_5500:
+                        view.setText(R.string.transport_status_5500);
+                        break;
+                    case Dicts.STATUS_5510:
+                        view.setText(R.string.transport_status_5510);
+                        break;
+                    case Dicts.STATUS_5520:
+                        view.setText(R.string.transport_status_5520);
+                        break;
+                    case Dicts.STATUS_5525:
+                        view.setText(R.string.transport_status_5525);
+                        break;
+                    case Dicts.STATUS_5530:
+                        view.setText(R.string.transport_status_5530);
+                        break;
+                    case Dicts.STATUS_5550:
+                        view.setText(R.string.transport_status_5550);
+                        break;
+                    case Dicts.STATUS_5600:
+                        view.setText(R.string.transport_status_5600);
+                        break;
+                    case Dicts.STATUS_5700:
+                        view.setText(R.string.transport_status_5700);
+                        break;
+                    case Dicts.STATUS_5750:
+                        view.setText(R.string.transport_status_5750);
+                        break;
+                    case Dicts.STATUS_5800:
+                        view.setText(R.string.transport_status_5800);
+                        break;
+                    case Dicts.STATUS_5900:
+                        view.setText(R.string.transport_status_5900);
+                        break;
+                    default:
+                        view.setText("");
+                }
+            }
         }
 
         /**
@@ -649,6 +736,11 @@ public class DispatchOrderManageActivity extends BaseActivity {
             }
 
             if (rtn) {
+                if (TextUtils.isEmpty(order.getRtnTruckNo()) || TextUtils.isEmpty(order.getRtnDriver())) {
+                    holder.changeRtn.setText(R.string.dispatch_title_rtn);
+                }else {
+                    holder.changeRtn.setText(R.string.dispatch_return_title);
+                }
                 holder.changeRtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

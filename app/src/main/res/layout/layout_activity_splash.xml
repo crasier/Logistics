@@ -4,33 +4,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <TextView
-        android:id="@+id/splash_company"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:shadowColor="@color/colorPrimary"
-        android:shadowDx="3"
-        android:shadowDy="3"
-        android:shadowRadius="5"
-        android:textSize="24sp"
-        android:textColor="@color/colorAccent"
-        android:text="@string/company"/>
-    <ImageView
-        android:id="@+id/splash_bg"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_above="@+id/splash_company"
-        android:layout_marginBottom="40dp"
+        android:orientation="vertical"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/icon_label"
-        android:scaleType="fitXY"/>
+        android:layout_marginTop="120dp"
+        android:gravity="center">
+        <ImageView
+            android:id="@+id/splash_bg"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/icon_label"
+            android:scaleType="fitXY"/>
+        <TextView
+            android:id="@+id/splash_company"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:shadowColor="@color/colorPrimary"
+            android:shadowDx="3"
+            android:shadowDy="3"
+            android:shadowRadius="5"
+            android:textSize="24sp"
+            android:textColor="@color/colorAccent"
+            android:text="@string/company"/>
+    </LinearLayout>
     <TextView
         android:id="@+id/splash_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="20dp"
+        android:paddingBottom="20dp"
         android:gravity="center"
         android:textSize="@dimen/text_micro"
         android:text="@string/copyright"
