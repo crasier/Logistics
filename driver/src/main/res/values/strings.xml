@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">物流平台司机客户端</string>
+    <string name="tap_exit">再次点击返回键退出</string>
+
+    <string name="main_homepage">首页</string>
+    <string name="main_orders">派车单</string>
+    <string name="main_mine">我的</string>
+</resources>
