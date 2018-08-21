@@ -1,5 +1,7 @@
 package com.sdeport.logistics.driver.bean;
 
+import com.sdeport.logistics.driver.server.WebRequest;
+
 import io.reactivex.Observer;
 import okhttp3.RequestBody;
 
@@ -11,6 +13,8 @@ public class EventBean {
     private String url;
     private Observer observer;
     private RequestBody body[];
+    private WebRequest.RType type;
+    private WebRequest.RMethod method;
 
     public EventBean(int tag) {
         this.tag = tag;
@@ -46,5 +50,21 @@ public class EventBean {
 
     public void setBody(RequestBody[] body) {
         this.body = body;
+    }
+
+    public WebRequest.RType getType() {
+        return type;
+    }
+
+    public void setType(WebRequest.RType type) {
+        this.type = type;
+    }
+
+    public WebRequest.RMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(WebRequest.RMethod method) {
+        this.method = method;
     }
 }

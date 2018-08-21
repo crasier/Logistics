@@ -34,7 +34,7 @@ public class MainActivity extends BaseActivity {
 
     private int iconIdArray[] = new int[] {
         R.drawable.icon_home_enable,
-        R.drawable.icon_home_diable,
+        R.drawable.icon_home_disable,
         R.drawable.icon_community_enable,
         R.drawable.icon_community_disable,
         R.drawable.icon_mine_enable,
@@ -119,7 +119,7 @@ public class MainActivity extends BaseActivity {
                 mPager.setCurrentItem(currentIndex);
                 changeUI();
                 break;
-            case R.id.home_empty:
+            case R.id.emptier:
                 currentIndex = 2;
                 mPager.setCurrentItem(currentIndex);
                 changeUI();

@@ -5,23 +5,73 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="@color/colorPrimary"/>
     <com.scwang.smartrefresh.layout.SmartRefreshLayout
-        android:id="@+id/home_refresh"
+        android:id="@+id/refresher"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <com.scwang.smartrefresh.header.MaterialHeader
-            android:id="@+id/home_header"
+            android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/title_ing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:textSize="@dimen/text_mid"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
+                    android:drawableLeft="@drawable/drawable_label_left"
+                    android:drawableStart="@drawable/drawable_label_left"
+                    android:drawablePadding="10dp"
+                    android:text="@string/ing"/>
+                <ListView
+                    android:id="@+id/order_ing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none"
+                    android:listSelector="@color/transparent"
+                    tools:listitem="@layout/included_order_detail"/>
+
+                <include layout="@layout/view_line_horizontal"
+                    android:layout_height="2dp"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="5dp"/>
+                <TextView
+                    android:id="@+id/title_not_received"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginTop="10dp"
+                    android:textSize="@dimen/text_mid"
+                    android:textColor="@color/text_dark"
+                    android:textStyle="bold"
+                    android:drawableLeft="@drawable/drawable_label_left"
+                    android:drawableStart="@drawable/drawable_label_left"
+                    android:drawablePadding="10dp"
+                    android:text="@string/not_receive"/>
+                <ListView
+                    android:id="@+id/order_not_received"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none"
+                    android:dividerHeight="0dp"
+                    android:listSelector="@color/transparent"
+                    tools:listitem="@layout/included_order_detail"/>
+            </LinearLayout>
+
+
+            <!--无信息时提示-->
             <TextView
-                android:id="@+id/home_empty"
+                android:id="@+id/emptier"
                 android:visibility="gone"
                 tools:visibility="visible"
                 android:layout_width="match_parent"

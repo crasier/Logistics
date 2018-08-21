@@ -7,19 +7,57 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:name=".MyApplication"
         android:theme="@style/AppTheme">
-        <activity android:name=".SplashActivity">
+        <activity android:name=".SplashActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".main.MainActivity"
+            android:theme="@style/TransTheme"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".account.LoginActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".account.RegisterActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".account.RetrieveActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".account.ModifyPwdActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".account.ModifyPhoneActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".group.BindGroupActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".group.BindResultActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".mine.UserInfoActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".mine.SettingActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".mine.AboutActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".orders.OrderDetailActivity"
+            android:configChanges="locale|orientation|keyboard"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

@@ -7,8 +7,6 @@ import android.preference.Preference;
 
 public class Prefer {
 
-    private static final String NAME = "LOGISTICS";
-
     private Context mContext;
     private SharedPreferences prefer;
     private SharedPreferences.Editor editor;
@@ -26,9 +24,9 @@ public class Prefer {
         return LazyHolder.INSTANCE;
     }
 
-    public void init(Context context) {
+    public void init(Context context, String name) {
         this.mContext = context;
-        prefer = mContext.getSharedPreferences(NAME, Context.MODE_PRIVATE);
+        prefer = mContext.getSharedPreferences(name, Context.MODE_PRIVATE);
     }
 
     public String getString(String key, String defaultValue) {

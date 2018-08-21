@@ -1,8 +1,60 @@
 <resources>
-    <string name="app_name">物流平台司机客户端</string>
+    <string name="app_name">司机通</string>
     <string name="tap_exit">再次点击返回键退出</string>
 
     <string name="main_homepage">首页</string>
     <string name="main_orders">派车单</string>
     <string name="main_mine">我的</string>
+
+    <string name="login_fail">登录失败</string>
+
+    <string name="login_hint_acc">用户名</string>
+    <string name="login_hint_nick">输入昵称</string>
+    <string name="login_hint_pwd">密码</string>
+    <string name="login_hint_confirm">再次输入密码</string>
+    <string name="login_hint_code">输入验证码</string>
+    <string name="account_validate_code">获取验证码</string>
+    <string name="login">登录</string>
+    <string name="register">注册</string>
+    <string name="register_success">注册成功，将回到登录界面</string>
+    <string name="operation_failed">操作失败</string>
+    <string name="operation_success">操作成功</string>
+    <string name="login_register">没有账号？注册一个</string>
+    <string name="login_retrieve">忘记密码？</string>
+    <string name="account_pwd_reset">重置密码</string>
+    <string name="acc_empty">账号不能为空</string>
+    <string name="pwd_empty">密码不能为空</string>
+    <string name="confirm_fail">两次密码不相同</string>
+    <string name="code_empty">请输入验证码</string>
+
+    <string name="ing">正在进行</string>
+    <string name="not_receive">待接单</string>
+
+    <string name="order_ing_bill_no">派车单号</string>
+    <string name="order_ing_bill_buyer">收货人</string>
+    <string name="order_ing_bill_address_buyer">收货地址</string>
+    <string name="order_ing_bill_contact">联系方式</string>
+    <string name="order_ing_bill_person">联系人</string>
+    <string name="address_container_get">提箱地址</string>
+    <string name="address_container_rtn">还箱地址</string>
+    <string name="time_container_delivery">送货时间</string>
+    <string name="info_container">箱信息</string>
+    <string name="time_container_get">提箱时间</string>
+    <string name="time_container_rtn">还箱时间</string>
+    <string name="driver_container_get">提箱司机</string>
+    <string name="driver_container_rtn">还箱司机</string>
+    <string name="truck_container_get">车牌号</string>
+    <string name="truck_container_rtn">车牌号</string>
+    <string name="title_container_get">提箱</string>
+    <string name="title_container_rtn">还箱</string>
+
+    <string name="order_check">查看</string>
+    <string name="order_receive">接单</string>
+    <string name="order_refuse">拒绝</string>
+    <string name="order_cancel">撤销</string>
+
+    <string name="order_list_all">撤销</string>
+    <string name="order_list_new">未接单</string>
+    <string name="order_list_received">已接单</string>
+    <string name="order_list_finished">已完成</string>
 </resources>

@@ -2,20 +2,36 @@ package com.sdeport.logistics.driver;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.http.SslError;
+import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
+import android.webkit.SslErrorHandler;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.sdeport.logistics.common.utils.MyToast;
+import com.sdeport.logistics.common.utils.Prefer;
 import com.sdeport.logistics.driver.bean.EventBean;
+import com.sdeport.logistics.driver.bean.User;
+import com.sdeport.logistics.driver.constant.Constants;
+import com.sdeport.logistics.driver.constant.Urls;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -34,7 +50,10 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     protected ImageView mRight;
     protected TextView mRightTV;
 
+    protected WebView mWebView;
+
     private boolean hasTap = false;
+    private boolean needAutoLogin = false;
 
     private Dialog loadingDialog;
 
@@ -54,6 +73,8 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         mTitle = findViewById(R.id.base_top_title);
         mRight = findViewById(R.id.base_top_right);
         mRightTV = findViewById(R.id.base_top_right_text);
+
+        mWebView = findViewById(R.id.base_webview);
 
         initUI(savedInstanceState);
     }
@@ -228,6 +249,159 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     }
 
     protected void login() {
+
+        if (Constants.DEBUG) {
+            onLoginResult(true);
+            return;
+        }
+
+        needAutoLogin = true;
+
+        if (mWebView == null) {
+            mWebView = findViewById(R.id.base_webview);
+            WebSettings settings = mWebView.getSettings();
+            settings.setJavaScriptEnabled(true);
+            settings.setSupportZoom(true);
+            mWebView.setWebViewClient(new MyWebViewClient());
+            mWebView.setWebChromeClient(new MyWebChromeClient());
+            mWebView.addJavascriptInterface(new JavaScript(), "log_cont");
+        }
+
+        mWebView.loadUrl(Urls.URL_LOGIN);
+
+        MyToast.show(this, "user:"+ Prefer.getInstance().getString(Constants.KEY_PREFER_ACCOUNT, "")
+            + "\npassword:"+Prefer.getInstance().getString(Constants.KEY_PREFER_PASSWORD, ""));
+
+        onLoginResult(true);
+    }
+
+    private class MyWebViewClient extends WebViewClient {
+
+        @Nullable
+        @Override
+        public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+            Log.e(TAG, "shouldInterceptRequest: url = "+url);
+            return super.shouldInterceptRequest(view, url);
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Log.e(TAG, "shouldOverrideUrlLoading: url = "+url);
+            // you want to catch when an URL is going to be loaded
+
+            if (url.equals("http://test.sditds.gov.cn:81/logistics/") ||
+                    url.equals("http://test.sditds.gov.cn:81/logistics/mainPage")) {
+
+                CookieManager manager = CookieManager.getInstance();
+
+                String token = manager.getCookie(Urls.URL_LOGIN);
+                Log.e(TAG, "shouldOverrideUrlLoading: token = "+ token);
+                if (TextUtils.isEmpty(token)) {
+                    manager.setCookie(Urls.URL_LOGIN, null);
+                    mWebView.clearCache(false);
+                    mWebView.loadUrl(Urls.URL_LOGIN);
+                    return false;
+                }
+
+                dismissDialog();
+//                    User.getUser().setToken(token);
+
+                Prefer.getInstance().putString(Constants.KEY_PREFER_ACCOUNT, User.getUser().getAccount());
+                Prefer.getInstance().putString(Constants.KEY_PREFER_PASSWORD, User.getUser().getPassword());
+
+                User.getUser().setToken(token);
+//                Prefer.getInstance().putString(Constants.KEY_PREFER_TOKEN, token);
+
+                mWebView.clearHistory();
+                mWebView.clearCache(true);
+                mWebView.destroy();
+
+                onLoginResult(true);
+                return false;
+            }
+
+            onLoginResult(false);
+            mWebView.loadUrl(url);
+            return true;
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+            if (isFinishing()) {
+                return;
+            }
+            createDialog(true);
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            dismissDialog();
+            if (url.equals(Urls.URL_LOGIN) && needAutoLogin) {
+                autoSubmit();
+                needAutoLogin = false;
+            }
+            getMsgFromHtml();
+            super.onPageFinished(view, url);
+        }
+
+        @Override
+        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            Log.e(TAG, "onReceivedSslError: "+error.toString());
+            handler.proceed();
+            super.onReceivedSslError(view, handler, error);
+        }
+
+    }
+
+    private class MyWebChromeClient extends WebChromeClient {
+
+    }
+
+    private void autoSubmit() {
+        if (TextUtils.isEmpty(User.getUser().getAccount()) ||
+                TextUtils.isEmpty(User.getUser().getPassword())) {
+            return;
+        }
+        Log.e("autoSubmit", "shouldOverrideUrlLoading: auto login");
+        String jsStr =
+                "javascript:document.getElementById('username').value='"+User.getUser().getAccount()+"';" +
+                        "document.getElementById('password').value='"+User.getUser().getPassword()+"';"+
+                        "document.getElementById('fm1').submit.click();";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsStr, new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                    Log.e("autoSubmit", "onReceiveValue: "+value);
+                }
+            });
+        }else {
+            mWebView.loadUrl(jsStr);
+        }
+    }
+
+    private void getMsgFromHtml() {
+        String jsStr = "javascript:window.log_cont.dataFromHtml(document.getElementById('msg').innerHTML);";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsStr, new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                    Log.e("autoSubmit", "onReceiveValue msg = "+value);
+                }
+            });
+        }else {
+            mWebView.loadUrl(jsStr);
+        }
+    }
+
+    public void onLoginResult(boolean result) {
+//        if (result && mEvent != null) {
+//            WebRequest.getInstance().withToken(mEvent.getUrl(), mEvent.getObserver(),mEvent.getType(),mEvent.getMethod(),mEvent.getBody());
+//        }else {
+//
+//        }
     }
 
     @Override
@@ -263,5 +437,16 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         dismissDialog();
         freeMe();
         super.onDestroy();
+    }
+
+    private class JavaScript {
+
+        @JavascriptInterface
+        public void dataFromHtml(String content) {
+            Log.e(TAG, "dataFromHtml: " + content);
+            if (!TextUtils.isEmpty(content)) {
+                MyToast.show(BaseActivity.this, content);
+            }
+        }
     }
 }
