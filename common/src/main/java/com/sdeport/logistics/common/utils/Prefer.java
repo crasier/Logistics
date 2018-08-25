@@ -38,4 +38,14 @@ public class Prefer {
         editor.putString(key, value);
         editor.apply();
     }
+
+    public long getLong(String key, long defValue) {
+        return prefer.getLong(key, defValue);
+    }
+
+    public void putLong(String key, long value) {
+        editor = prefer.edit();
+        editor.putLong(key, value);
+        editor.apply();
+    }
 }

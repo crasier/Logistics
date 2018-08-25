@@ -35,4 +35,5 @@
     <color name="orange">#ff8306</color>
     <color name="orange_light">#ff9932</color>
     <color name="orange_dark">#ca6805</color>
+    <color name="text_main_light">#e69f11</color>
 </resources>

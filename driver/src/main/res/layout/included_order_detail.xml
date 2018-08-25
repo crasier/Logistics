@@ -6,81 +6,87 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
     <LinearLayout
+        android:id="@+id/order_simple"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-        <ImageView
-            android:id="@+id/arrow"
-            android:layout_width="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/icon_arrow_down"
-            android:scaleType="center"/>
-        <TextView
-            android:id="@+id/bill_no"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="5dp"
-            android:layout_marginStart="5dp"
-            android:textSize="@dimen/text_small"
-            android:textColor="@color/text_main"
             android:gravity="center_vertical"
-            tools:text="派车单号:CNHU201808220011" />
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimary"
-            android:textSize="@dimen/text_small"
-            android:gravity="center"
-            tools:text="已提箱"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="60dp"
-            android:textSize="@dimen/text_micro"
-            android:textColor="@color/text_main"
-            android:text="@string/order_ing_bill_buyer"/>
-        <TextView
-            android:id="@+id/buyer"
+            android:orientation="horizontal">
+            <ImageView
+                android:id="@+id/arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/icon_arrow_down"
+                android:scaleType="center"/>
+            <TextView
+                android:id="@+id/bill_no"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
+                android:textSize="@dimen/text_small"
+                android:textColor="@color/text_main"
+                android:gravity="center_vertical"
+                tools:text="派车单号:CNHU201808220011" />
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/text_small"
+                android:gravity="center"
+                tools:text="已提箱"/>
+        </LinearLayout>
+        <include layout="@layout/view_line_horizontal_light"/>
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/text_micro"
-            android:textColor="@color/text_gray"
-            tools:text="山东电子口岸"/>
-    </LinearLayout>
-    <include layout="@layout/view_line_horizontal_light"/>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="60dp"
-            android:textSize="@dimen/text_micro"
-            android:textColor="@color/text_main"
-            android:text="@string/order_ing_bill_address_buyer"/>
-        <TextView
-            android:id="@+id/address"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="60dp"
+                android:textSize="@dimen/text_micro"
+                android:textColor="@color/text_main"
+                android:text="@string/order_ing_bill_buyer"/>
+            <TextView
+                android:id="@+id/owner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_micro"
+                android:textColor="@color/text_gray"
+                tools:text="山东电子口岸"/>
+        </LinearLayout>
+        <include layout="@layout/view_line_horizontal_light"/>
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/text_micro"
-            android:textColor="@color/text_gray"
-            tools:text="山东省济南市新泺大街110号"/>
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="60dp"
+                android:textSize="@dimen/text_micro"
+                android:textColor="@color/text_main"
+                android:text="@string/order_ing_bill_address_buyer"/>
+            <TextView
+                android:id="@+id/address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_micro"
+                android:textColor="@color/text_gray"
+                tools:text="山东省济南市新泺大街110号"/>
+        </LinearLayout>
+        <include layout="@layout/view_line_horizontal_light"/>
     </LinearLayout>
-    <include layout="@layout/view_line_horizontal_light"/>
     <LinearLayout
         android:id="@+id/order_spread"
         android:layout_width="match_parent"
@@ -91,6 +97,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:layout_marginTop="5dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
@@ -109,7 +116,7 @@
                 android:textColor="@color/text_gray"
                 tools:text="山东电子口岸"/>
         </LinearLayout>
-        <include layout="@layout/view_line_horizontal_light"/>
+        <!--<include layout="@layout/view_line_horizontal_light"/>-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

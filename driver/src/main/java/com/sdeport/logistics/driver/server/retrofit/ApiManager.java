@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.GsonBuilder;
+import com.sdeport.logistics.driver.constant.Urls;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -38,8 +39,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class ApiManager {
-
-    public static String URL_BASE = "http://test.sditds.gov.cn:81";
 
     private RetrofitService retrofitService;
     public static ApiManager instance;
@@ -82,7 +81,7 @@ public class ApiManager {
                 .build();
         if (retrofitService == null) {
             Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(URL_BASE)
+                    .baseUrl(Urls.URL_BASE)
                     .client(client)
                     .addConverterFactory(NullOrEmptyConvertFactory.create())
                     .addConverterFactory(ScalarsConverterFactory.create())

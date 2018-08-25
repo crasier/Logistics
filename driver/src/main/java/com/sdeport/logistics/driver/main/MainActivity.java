@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sdeport.logistics.driver.BaseActivity;
@@ -31,6 +32,9 @@ public class MainActivity extends BaseActivity {
     protected TextView mMine;
     @BindView(R.id.main_pager)
     protected ViewPager mPager;
+
+    @BindView(R.id.main_dot)
+    protected ImageView dotMain;
 
     private int iconIdArray[] = new int[] {
         R.drawable.icon_home_enable,

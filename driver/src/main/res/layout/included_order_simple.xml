@@ -47,7 +47,7 @@
             android:textColor="@color/text_main"
             android:text="@string/order_ing_bill_buyer"/>
         <TextView
-            android:id="@+id/buyer"
+            android:id="@+id/owner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="@dimen/text_micro"

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <RelativeLayout
+        android:id="@+id/motorcade_select"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/motorcade"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/bg_btn_pressed_border"
+            android:inputType="text"
+            android:hint="@string/group_select_hint"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp" />
+
+        <ImageView
+            android:id="@+id/motorcade_clear"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/icon_close"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/motorcade_info"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_below="@+id/motorcade_select"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/bg_btn_pressed_border"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/motorcade_info_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textSize="@dimen/text_big"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginTop="10dp"
+            android:text="@string/group_info" />
+
+        <TextView
+            android:id="@+id/motorcade_info_name_lable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/motorcade_info_title"
+            android:layout_marginTop="10dp"
+            android:textSize="@dimen/text_mid"
+            android:textColor="@color/text_dark"
+            android:text="@string/group_name" />
+
+        <TextView
+            android:id="@+id/motorcade_info_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/motorcade_info_title"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_toRightOf="@+id/motorcade_info_name_lable"
+            android:textSize="@dimen/text_mid"
+            android:textColor="@color/text_gray"
+            tools:text="青岛港四方车队" />
+
+        <TextView
+            android:id="@+id/motorcade_info_address_lable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/motorcade_info_name_lable"
+            android:layout_marginTop="10dp"
+            android:textSize="@dimen/text_mid"
+            android:textColor="@color/text_dark"
+            android:text="@string/group_contact_person" />
+
+        <TextView
+            android:id="@+id/motorcade_contact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/motorcade_info_name"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_toRightOf="@+id/motorcade_info_name_lable"
+            android:textSize="@dimen/text_mid"
+            android:textColor="@color/text_gray"
+            tools:text="张大三" />
+
+        <!--<TextView-->
+            <!--android:id="@+id/motorcade_info_phone_lable"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@+id/motorcade_info_address_lable"-->
+            <!--android:layout_marginTop="10dp"-->
+            <!--android:text="车队地址" />-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/motorcade_phone"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@+id/motorcade_address"-->
+            <!--android:layout_marginLeft="10dp"-->
+            <!--android:layout_marginTop="10dp"-->
+            <!--android:layout_toRightOf="@+id/motorcade_info_name_lable"-->
+            <!--android:text="青岛市济南路134号" />-->
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/apply"
+        android:layout_width="120dp"
+        android:layout_height="48dp"
+        android:layout_below="@id/motorcade_info"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp"
+        android:background="@drawable/bg_border_orange"
+        android:gravity="center"
+        android:textSize="@dimen/text_mid"
+        android:textColor="@color/orange"
+        android:text="@string/group_bind_apply" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:textColor="@color/text_gray"
+        android:textSize="@dimen/text_micro"
+        android:lineSpacingExtra="5dp"
+        android:padding="20dp"
+        android:text="@string/group_bind_description" />
+</RelativeLayout>

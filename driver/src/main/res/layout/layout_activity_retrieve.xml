@@ -5,6 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/icon_pwd_reset"/>
     <EditText
         android:id="@+id/retrieve_acc"
         android:layout_width="match_parent"
@@ -14,10 +20,12 @@
         android:layout_marginStart="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginEnd="15dp"
+        android:drawableLeft="@drawable/icon_phone"
+        android:drawableStart="@drawable/icon_phone"
+        android:drawablePadding="10dp"
         android:padding="5dp"
         android:textSize="@dimen/text_mid"
         android:hint="@string/login_hint_acc"
-        android:textColorHint="@color/text_hint"
         android:textCursorDrawable="@drawable/cursor"/>
     <EditText
         android:id="@+id/retrieve_pwd"
@@ -28,10 +36,13 @@
         android:layout_marginStart="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginEnd="15dp"
+        android:drawableLeft="@drawable/icon_password"
+        android:drawableStart="@drawable/icon_password"
+        android:drawablePadding="10dp"
         android:padding="5dp"
         android:textSize="@dimen/text_mid"
         android:hint="@string/login_hint_pwd"
-        android:textColorHint="@color/text_hint"
+        android:inputType="textPassword"
         android:textCursorDrawable="@drawable/cursor"/>
 
     <EditText
@@ -43,11 +54,13 @@
         android:layout_marginStart="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginEnd="15dp"
+        android:drawableLeft="@drawable/icon_password"
+        android:drawableStart="@drawable/icon_password"
+        android:drawablePadding="10dp"
         android:padding="5dp"
         android:textSize="@dimen/text_mid"
         android:hint="@string/login_hint_confirm"
         android:inputType="textPassword"
-        android:textColorHint="@color/text_hint"
         android:textCursorDrawable="@drawable/cursor"/>
 
     <LinearLayout
@@ -65,21 +78,22 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:padding="5dp"
+            android:drawableLeft="@drawable/icon_validate"
+            android:drawableStart="@drawable/icon_validate"
+            android:drawablePadding="10dp"
             android:textSize="@dimen/text_mid"
             android:hint="@string/login_hint_code"
             android:inputType="textPassword"
-            android:textColorHint="@color/text_hint"
             android:textCursorDrawable="@drawable/cursor"/>
         <Button
             android:id="@+id/retrieve_code_get"
-            android:layout_width="96dp"
+            android:layout_width="72dp"
             android:layout_height="match_parent"
+            android:background="@drawable/bg_border_orange"
             android:layout_marginBottom="10dp"
-            android:background="@color/colorPrimary"
-            android:textColor="@color/white"
+            android:textColor="@color/orange"
             android:textSize="@dimen/text_small"
-            tools:text="获取验证码（60）"
-            tools:textColor="@color/white_disable"
+            tools:text="获取验证码"
             android:text="@string/account_validate_code"/>
     </LinearLayout>
 

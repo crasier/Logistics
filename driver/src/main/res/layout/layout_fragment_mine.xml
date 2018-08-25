@@ -1,6 +1,280 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-</android.support.constraint.ConstraintLayout>
+    <RelativeLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:background="@drawable/mine_bg">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+            <RelativeLayout
+                android:id="@+id/avatar_item"
+                android:layout_width="60dp"
+                android:layout_height="60dp">
+
+                <ImageView
+                    android:id="@+id/avatar"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:src="@drawable/avatar" />
+
+                <ImageView
+                    android:id="@+id/camera"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/camera" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/user_name"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/avatar_item"
+                android:textColor="@color/white"
+                android:gravity="center"
+                tools:text="张三" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/header">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+            <RelativeLayout
+                android:id="@+id/attach_item"
+                android:layout_width="250dp"
+                android:layout_height="50dp"
+                android:layout_centerHorizontal="true">
+
+                <ImageView
+                    android:id="@+id/attach_icon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/flag_fill" />
+
+                <TextView
+                    android:id="@+id/attach_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/attach_icon"
+                    android:textColor="@color/text_dark"
+                    android:textSize="@dimen/text_small"
+                    android:text="@string/title_bind_group" />
+
+                <TextView
+                    android:id="@+id/attach_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_border_orange"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/attach_title"
+                    android:textSize="@dimen/text_micro"
+                    android:paddingLeft="5dp"
+                    android:paddingRight="5dp"
+                    android:textColor="@color/orange"
+                    android:text="@string/unbound_group" />
+
+                <TextView
+                    android:id="@+id/attach_sub_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/attach_icon"
+                    android:textColor="@color/text_gray"
+                    android:textSize="@dimen/text_micro"
+                    android:text="@string/bind_group_tip" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/arrow_right" />
+
+                <include layout="@layout/view_line_horizontal_light"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/user_info_item"
+                android:layout_width="250dp"
+                android:layout_height="50dp"
+                android:layout_below="@id/attach_item"
+                android:layout_centerHorizontal="true">
+
+                <ImageView
+                    android:id="@+id/user_info_icon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/people_fill" />
+
+                <TextView
+                    android:id="@+id/user_info_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/user_info_icon"
+                    android:textSize="@dimen/text_small"
+                    android:textColor="@color/text_dark"
+                    android:text="@string/title_personal" />
+
+                <TextView
+                    android:id="@+id/user_info_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_border_green"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/user_info_title"
+                    android:textSize="@dimen/text_micro"
+                    android:textColor="@color/icon_green"
+                    android:paddingLeft="5dp"
+                    android:paddingRight="5dp"
+                    tools:text="已完整" />
+
+                <TextView
+                    android:id="@+id/user_info__sub_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/user_info_icon"
+                    android:textSize="@dimen/text_micro"
+                    android:textColor="@color/text_gray"
+                    tools:text="个人信息完整" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/arrow_right" />
+
+                <include layout="@layout/view_line_horizontal_light"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/settings_item"
+                android:layout_width="250dp"
+                android:layout_height="50dp"
+                android:layout_below="@id/user_info_item"
+                android:layout_centerHorizontal="true">
+
+                <ImageView
+                    android:id="@+id/settings_icon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/settings_fill" />
+
+                <TextView
+                    android:id="@+id/settings_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/settings_icon"
+                    android:textSize="@dimen/text_small"
+                    android:textColor="@color/text_dark"
+                    android:text="@string/title_settings" />
+
+                <TextView
+                    android:id="@+id/settings_sub_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@+id/settings_icon"
+                    android:textSize="@dimen/text_micro"
+                    android:textColor="@color/text_gray"
+                    tools:text="检测到有新版本" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/arrow_right" />
+
+                <include layout="@layout/view_line_horizontal_light"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/about_item"
+                android:layout_width="250dp"
+                android:layout_height="50dp"
+                android:layout_below="@id/settings_item"
+                android:layout_centerHorizontal="true">
+
+                <ImageView
+                    android:id="@+id/about_icon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/about_fill" />
+
+                <TextView
+                    android:id="@+id/about_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/about_icon"
+                    android:textSize="@dimen/text_small"
+                    android:textColor="@color/text_dark"
+                    android:text="@string/title_about_us" />
+
+                <TextView
+                    android:id="@+id/about_sub_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/about_icon"
+                    android:textSize="@dimen/text_micro"
+                    android:textColor="@color/text_gray"
+                    android:text="@string/our_group" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/arrow_right" />
+
+                <include layout="@layout/view_line_horizontal_light"/>
+            </RelativeLayout>
+        </RelativeLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

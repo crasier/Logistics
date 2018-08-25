@@ -47,6 +47,7 @@
             android:textSize="@dimen/text_mid"
             android:maxLength="12"
             android:background="@color/transparent"
+            android:inputType="phone"
             android:hint="@string/login_hint_acc"
             android:textCursorDrawable="@drawable/cursor"/>
     </LinearLayout>

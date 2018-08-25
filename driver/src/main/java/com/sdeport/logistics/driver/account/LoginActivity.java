@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+
+import com.alibaba.fastjson.JSONObject;
 import com.sdeport.logistics.common.utils.MyToast;
 import com.sdeport.logistics.common.utils.Prefer;
 import com.sdeport.logistics.driver.BaseActivity;
@@ -13,12 +15,15 @@ import com.sdeport.logistics.driver.bean.User;
 import com.sdeport.logistics.driver.constant.Codes;
 import com.sdeport.logistics.driver.constant.Constants;
 import com.sdeport.logistics.driver.main.MainActivity;
+import com.sdeport.logistics.driver.server.WebRequest;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Optional;
 import butterknife.Unbinder;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 public class LoginActivity extends BaseActivity {
 
@@ -71,6 +76,8 @@ public class LoginActivity extends BaseActivity {
     @Override
     public void onLoginResult(boolean result) {
         if (result) {
+            Prefer.getInstance().putString(Constants.KEY_PREFER_ACCOUNT, acc);
+            Prefer.getInstance().putString(Constants.KEY_PREFER_PASSWORD, pwd);
             startActivity(new Intent(this, MainActivity.class));
             LoginActivity.this.finish();
         }else {

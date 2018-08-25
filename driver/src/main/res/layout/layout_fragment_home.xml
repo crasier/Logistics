@@ -18,7 +18,7 @@
             android:layout_height="match_parent">
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_margin="10dp"
                 android:orientation="vertical">
                 <TextView
@@ -33,6 +33,17 @@
                     android:drawableStart="@drawable/drawable_label_left"
                     android:drawablePadding="10dp"
                     android:text="@string/ing"/>
+                <TextView
+                    android:id="@+id/ing_emptier"
+                    android:visibility="gone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_big"
+                    android:textColor="@color/colorPrimary"
+                    android:drawablePadding="10dp"
+                    android:drawableTop="@drawable/icon_data_empty"
+                    android:layout_gravity="center"
+                    android:text="@string/order_ing_empty"/>
                 <ListView
                     android:id="@+id/order_ing"
                     android:layout_width="match_parent"
@@ -58,6 +69,17 @@
                     android:drawableStart="@drawable/drawable_label_left"
                     android:drawablePadding="10dp"
                     android:text="@string/not_receive"/>
+                <TextView
+                    android:id="@+id/not_emptier"
+                    android:visibility="gone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_big"
+                    android:textColor="@color/colorPrimary"
+                    android:drawablePadding="10dp"
+                    android:drawableTop="@drawable/icon_data_empty"
+                    android:layout_gravity="center"
+                    android:text="@string/order_new_empty"/>
                 <ListView
                     android:id="@+id/order_not_received"
                     android:layout_width="match_parent"

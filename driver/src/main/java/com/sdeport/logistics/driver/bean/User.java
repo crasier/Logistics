@@ -7,6 +7,7 @@ public class User {
     private String password;
     private String nick;
     private String token;
+    private Role role;
 
     private static class LazyHolder {
         public static final User INSTANCE = new User();
@@ -54,5 +55,13 @@ public class User {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

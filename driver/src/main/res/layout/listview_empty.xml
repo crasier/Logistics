@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:listSelector="@color/transparent"
+        android:scrollbars="none"
+        android:dividerHeight="1px"
+        android:divider="@color/light"/>
+    <TextView
+        android:id="@+id/list_emptier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_big"
+        android:textColor="@color/colorPrimary"
+        android:layout_centerInParent="true"
+        tools:text="数据为空"/>
+</RelativeLayout>

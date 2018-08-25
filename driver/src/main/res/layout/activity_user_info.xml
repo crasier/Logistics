@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp">
+
+        <TextView
+            android:id="@+id/phone_title"
+            android:layout_width="@dimen/user_info_label_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/info_phone"
+            android:textColor="@color/text_dark"
+            android:textSize="@dimen/text_mid" />
+
+        <EditText
+            android:id="@+id/phone"
+            android:layout_width="@dimen/user_info_et_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/phone_title"
+            android:background="@null"
+            android:hint="@string/info_phone_hint"
+            android:textColor="@color/text_gray"
+            android:textSize="@dimen/text_small" />
+    </RelativeLayout>
+    <include layout="@layout/view_line_horizontal_light"/>
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/name_title"
+            android:layout_width="@dimen/user_info_label_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/info_name"
+            android:textColor="@color/text_dark"
+            android:textSize="@dimen/text_mid" />
+
+        <EditText
+            android:id="@+id/name"
+            android:layout_width="@dimen/user_info_et_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/name_title"
+            android:background="@null"
+            android:hint="@string/info_name_hint"
+            android:textColor="@color/text_gray"
+            android:textSize="@dimen/text_small" />
+    </RelativeLayout>
+    <include layout="@layout/view_line_horizontal_light"/>
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/id_title"
+            android:layout_width="@dimen/user_info_label_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/info_id"
+            android:textColor="@color/text_dark"
+            android:textSize="@dimen/text_mid" />
+
+        <EditText
+            android:id="@+id/id"
+            android:layout_width="@dimen/user_info_et_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/id_title"
+            android:background="@null"
+            android:hint="@string/info_id_hint"
+            android:textColor="@color/text_gray"
+            android:textSize="@dimen/text_small" />
+
+    </RelativeLayout>
+    <include layout="@layout/view_line_horizontal_light"/>
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/driving_licence_title"
+            android:layout_width="@dimen/user_info_label_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/info_license"
+            android:textColor="@color/text_dark"
+            android:textSize="@dimen/text_mid" />
+
+        <EditText
+            android:id="@+id/driving_licence"
+            android:layout_width="@dimen/user_info_et_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/driving_licence_title"
+            android:background="@null"
+            android:hint="@string/info_license_hint"
+            android:textColor="@color/text_gray"
+            android:textSize="@dimen/text_small" />
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:entries="@array/plate_type" />
+    </RelativeLayout>
+    <include layout="@layout/view_line_horizontal_light"/>
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/truck_title"
+            android:layout_width="@dimen/user_info_label_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:textColor="@color/text_dark"
+            android:text="@string/info_truck"
+            android:textSize="@dimen/text_mid" />
+
+        <EditText
+            android:id="@+id/truck"
+            android:layout_width="@dimen/user_info_et_width"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/truck_title"
+            android:background="@null"
+            android:hint="@string/info_truck_hint"
+            android:textColor="@color/text_gray"
+            android:textSize="@dimen/text_small" />
+    </RelativeLayout>
+    <include layout="@layout/view_line_horizontal_light"/>
+    <TextView
+        android:id="@+id/save"
+        android:layout_width="100dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/button_logout_bg"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:text="@string/save" />
+</LinearLayout>

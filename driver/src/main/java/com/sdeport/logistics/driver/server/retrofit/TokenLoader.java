@@ -2,6 +2,7 @@ package com.sdeport.logistics.driver.server.retrofit;
 
 import com.alibaba.fastjson.JSONObject;
 import com.sdeport.logistics.driver.bean.User;
+import com.sdeport.logistics.driver.constant.Urls;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

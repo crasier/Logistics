@@ -11,6 +11,7 @@ import com.sdeport.logistics.driver.account.LoginActivity;
 import com.sdeport.logistics.driver.bean.User;
 import com.sdeport.logistics.driver.constant.Constants;
 import com.sdeport.logistics.driver.main.MainActivity;
+import com.sdeport.logistics.driver.server.WebRequest;
 
 public class SplashActivity extends BaseActivity{
 
@@ -18,6 +19,7 @@ public class SplashActivity extends BaseActivity{
     protected void initUI(Bundle savedInstanceState) {
         addContentView(R.layout.layout_activity_splash);
         mHandler.postDelayed(jumpToMain, 1500);
+        mHandler.postDelayed(loginFailRunnable, 5000);
     }
 
     private Runnable jumpToMain = new Runnable() {
@@ -76,6 +78,6 @@ public class SplashActivity extends BaseActivity{
 
     @Override
     protected void freeMe() {
-
+        MyToast.cancel();
     }
 }

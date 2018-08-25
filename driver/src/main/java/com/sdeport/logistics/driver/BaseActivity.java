@@ -26,16 +26,25 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.sdeport.logistics.common.utils.MyToast;
 import com.sdeport.logistics.common.utils.Prefer;
+import com.sdeport.logistics.driver.bean.Driver;
 import com.sdeport.logistics.driver.bean.EventBean;
+import com.sdeport.logistics.driver.bean.Role;
 import com.sdeport.logistics.driver.bean.User;
 import com.sdeport.logistics.driver.constant.Constants;
 import com.sdeport.logistics.driver.constant.Urls;
+import com.sdeport.logistics.driver.server.WebRequest;
+import com.sdeport.logistics.driver.tools.CD;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -74,8 +83,6 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         mRight = findViewById(R.id.base_top_right);
         mRightTV = findViewById(R.id.base_top_right_text);
 
-        mWebView = findViewById(R.id.base_webview);
-
         initUI(savedInstanceState);
     }
 
@@ -101,6 +108,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     protected abstract void freeMe();
 
     protected void exitAPP() {
+        CD.getInstance().stop();
         System.exit(0);
     }
 
@@ -250,10 +258,10 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
     protected void login() {
 
-        if (Constants.DEBUG) {
-            onLoginResult(true);
-            return;
-        }
+//        if (Constants.DEBUG) {
+//            onLoginResult(true);
+//            return;
+//        }
 
         needAutoLogin = true;
 
@@ -268,11 +276,6 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
 
         mWebView.loadUrl(Urls.URL_LOGIN);
-
-        MyToast.show(this, "user:"+ Prefer.getInstance().getString(Constants.KEY_PREFER_ACCOUNT, "")
-            + "\npassword:"+Prefer.getInstance().getString(Constants.KEY_PREFER_PASSWORD, ""));
-
-        onLoginResult(true);
     }
 
     private class MyWebViewClient extends WebViewClient {
@@ -289,8 +292,8 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
             Log.e(TAG, "shouldOverrideUrlLoading: url = "+url);
             // you want to catch when an URL is going to be loaded
 
-            if (url.equals("http://test.sditds.gov.cn:81/logistics/") ||
-                    url.equals("http://test.sditds.gov.cn:81/logistics/mainPage")) {
+            if (url.equals(Urls.URL_LOGISTICS) ||
+                    url.equals(Urls.URL_LOGISTICS_MAINPAGE)) {
 
                 CookieManager manager = CookieManager.getInstance();
 
@@ -314,7 +317,12 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
                 mWebView.clearHistory();
                 mWebView.clearCache(true);
-                mWebView.destroy();
+
+                if (mEvent == null) {//需要获取用户角色详情
+                    onLoginResult(false);
+                    getRoleDetail();
+                    return false;
+                }
 
                 onLoginResult(true);
                 return false;
@@ -367,6 +375,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         String jsStr =
                 "javascript:document.getElementById('username').value='"+User.getUser().getAccount()+"';" +
                         "document.getElementById('password').value='"+User.getUser().getPassword()+"';"+
+                        "document.getElementById('inputCode').value=document.getElementById('checkCode').value;"+
                         "document.getElementById('fm1').submit.click();";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -397,11 +406,79 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     }
 
     public void onLoginResult(boolean result) {
-//        if (result && mEvent != null) {
-//            WebRequest.getInstance().withToken(mEvent.getUrl(), mEvent.getObserver(),mEvent.getType(),mEvent.getMethod(),mEvent.getBody());
-//        }else {
-//
-//        }
+        if (result && mEvent != null) {
+            WebRequest.getInstance().withToken(mEvent.getUrl(), mEvent.getObserver(),mEvent.getType(),mEvent.getMethod(),mEvent.getBody());
+            mEvent = null;
+        }else {
+
+        }
+    }
+
+    protected void getRoleDetail() {
+        WebRequest.getInstance().getRoleInfo(User.getUser().getAccount(), new Observer<JSONObject>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                createDialog(false);
+            }
+
+            @Override
+            public void onNext(JSONObject o) {
+                if (o == null) {
+                    onError(null);
+                    return;
+                }
+                if (!o.getBooleanValue("success")) {
+                    onError(new Throwable(o.getString("failReason")));
+                    return;
+                }
+
+
+                Log.e("roleDetail", "data = "+o.getString("data"));
+
+                JSONObject roleObj = JSON.parseObject(o.getString("data"));
+
+                if (roleObj == null) {
+                    onError(new Throwable("role is invalid"));
+                    return;
+                }
+                Role role = JSON.parseObject(roleObj.toJSONString(), Role.class);
+
+                if (role == null) {
+                    onError(new Throwable("role is invalid"));
+                    return;
+                }
+
+                if (!TextUtils.isEmpty(role.getDriverInfo())) {
+                    Driver driver = JSON.parseObject(role.getDriverInfo(), Driver.class);
+                    role.setDriver(driver);
+                }
+
+                User.getUser().setRole(role);
+
+                if (role.getRoleInfo() != null && role.getRoleInfo().contains("11111")) {
+                    onLoginResult(true);
+                }else {
+                    Prefer.getInstance().putString(Constants.KEY_PREFER_ACCOUNT, "");
+                    Prefer.getInstance().putString(Constants.KEY_PREFER_PASSWORD, "");
+                    onError(new Throwable(getString(R.string.login_role_fail)));
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                onLoginResult(false);
+                User.getUser().setAccount("");
+                User.getUser().setPassword("");
+
+                MyToast.show(BaseActivity.this, e == null || TextUtils.isEmpty(e.getMessage()) ?
+                        getString(R.string.operation_failed) : e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+                dismissDialog();
+            }
+        });
     }
 
     @Override

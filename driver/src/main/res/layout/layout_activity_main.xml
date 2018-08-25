@@ -19,17 +19,30 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:orientation="horizontal">
-        <TextView
-            android:id="@+id/main_info"
+        <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:textSize="@dimen/text_micro"
-            android:textColor="@color/colorPrimary"
-            android:text="@string/main_homepage"
-            android:drawableTop="@drawable/icon_home_enable"
-            android:drawablePadding="5dp"
-            android:gravity="center_horizontal"/>
+            android:layout_weight="1">
+            <TextView
+                android:id="@+id/main_info"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="@dimen/text_micro"
+                android:textColor="@color/colorPrimary"
+                android:text="@string/main_homepage"
+                android:drawableTop="@drawable/icon_home_enable"
+                android:drawablePadding="5dp"
+                android:gravity="center_horizontal"/>
+            <ImageView
+                android:id="@+id/main_dot"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="15dp"
+                android:paddingStart="15dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/dot_red"/>
+        </RelativeLayout>
         <TextView
             android:id="@+id/main_community"
             android:layout_width="0dp"

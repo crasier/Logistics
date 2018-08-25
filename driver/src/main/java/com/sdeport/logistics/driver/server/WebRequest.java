@@ -6,10 +6,9 @@ import android.util.Log;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sdeport.logistics.driver.bean.EventBean;
+import com.sdeport.logistics.driver.constant.Urls;
 import com.sdeport.logistics.driver.server.retrofit.ApiManager;
 import com.sdeport.logistics.driver.server.retrofit.TokenLoader;
-import com.sdeport.logistics.driver.server.retrofit.Urls;
-
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -19,11 +18,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
@@ -170,286 +173,330 @@ public class WebRequest {
         return Observable.error(new Throwable("登录过期，正在重新登录..."));
     }
 
-    /**
-     * 测试用登录
-     * */
-    public void login(String name, String pwd, String token, InputStream pfxInputStream, Observer observer) {
-//        String url = Urls.URL_LOGIN;
-//        ApiManager.getInstance().getRetrofitService().login(url, name, pwd)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(observer);
-
-
-        ApiManager.getInstance().getRetrofitService().login("https://test.sditds.gov.cn:5565/cas/login?service=http://test.sditds.gov.cn:81/cargo/security/login&theme=sso_cargo&cert_alias=sso&encrypt_info=kmtPNcJqdsMUtBevloOLU6LsjR8l7h8T3TjcQJxOCqAm49HYy2pEX3KilIrv7EoGov047u3j5cVMJhgvCD1RxSGlQRHcuxzN3bnfm6bmfoZe%2BNtY1q0r%2B77Us2M7jW0P4497IGqzon%2B2UNgqxdwS%2BQR%2FfAviK7Sz8bUWcf9m%2BgwzSjLOG9Fu7MKuImxQrmkndSz2vqrjoVlYtzE5VZE43f%2BdRxliV3sLItmPLeOof%2FEEliWuJAGAwvgRX0YhszcsPaLpsC0cqtfGhhJTTV%2Bd%2FUHNpFSixaF1vR3TAwBhovQzYneIe50uBx3P%2FjLC6vwrzHG6yPHSzeoZ%2FH7uY%2B6X3Q%3D%3D%2BNtY1q0r%2B77Us2M7jW0P4497IGqzon%2B2UNgqxdwS%2BQR%2FfAviK7Sz8bUWcf9m%2BgwzSjLOG9Fu7MKuImxQrmkndSz2vqrjoVlYtzE5VZE43f%2BdRxliV3sLItmPLeOof%2FEEliWuJAGAwvgRX0YhszcsPaLpsC0cqtfGhhJTTV%2Bd%2FUHNpFSixaF1vR3TAwBhovQzYneIe50uBx3P%2FjLC6vwrzHG6yPHSzeoZ%2FH7uY%2B6X3Q%3D%3D")
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
-    }
-
     private String formatToken(String token) {
 //        return String.format(Locale.CHINA, "sdeport.session.id=%s", token);
         return token;
     }
 
     /**
-     * 获取运输委托单列表信息
+     * 获取验证码
+     * @param type 1 注册， 2 重置密码
      * */
-    public void getOrderList(int pageNum, int pageSize, String billNo, String forwardName,
-                             String consigneeCName, String delivTimeStart, String delivTimeEnd,
-                             String flowStatus, Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/forwarder/listMotoForOrdData?" +
-                        "pageNum=%s" +
-                        "&pageSize=%s" +
-                        "&billNo=%s" +
-                        "&forwarderName=%s" +
-                        "&consigneeCName=%s" +
-                        "&delivTimeStart=%s" +
-                        "&delivTimeEnd=%s" +
-                        "&flowStatus=%s" +
-                        "&_=%s",
+    public void getValidateCode(String phone, String type, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/getSmsCode?" +
+                        "phoneNumber=%s" +
+                        "&reFlag=%s",
                 Urls.URL_SERVER_BASE,
-                pageNum,
-                pageSize,
-                billNo,
-                forwardName,
-                consigneeCName,
-                delivTimeStart,
-                delivTimeEnd,
-                flowStatus,
-                Calendar.getInstance().getTimeInMillis());
-
-        withToken(url, observer, RType.JSONObject, RMethod.GET);
-    }
-
-    /**
-     * 获取订单详细信息
-     * */
-    public void getOrderDetail(String id, Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/forwarder/motorcade/detail?" +
-                        "forwardingId=%s",
-                Urls.URL_SERVER_BASE,
-                id);
-
-        withToken(url, observer, RType.String, RMethod.GET);
-    }
-
-    /**
-     * 拒绝/接受订单,5510 拒绝, 5520 接受, 5530 撤销
-     * */
-    public void modifyOrderStatus(String id, String status, Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/forwarder/changeMotoForOrdStatus?" +
-                        "id=%s" +
-                        "&flowStatus=%s",
-                Urls.URL_SERVER_BASE,
-                id,
-                status);
-
-        withToken(url, observer, RType.JSONObject, RMethod.GET);
-    }
-
-    /**
-     * 提箱派车列表获取
-     */
-    public void getOrderDispatchList(int pageNum, int pageSize, String billNo, String delivPlaceName,
-                              String rtnPlaceName, String flowStatus, String consigneeCName,
-                              String forwarderName, String fkForwardingId, Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getDetailsList?" +
-                        "pageNum=%s" +
-                        "&pageSize=%s" +
-                        "&billNo=%s" +
-                        "&delivPlaceName=%s" +
-                        "&rtnPlaceName=%s" +
-                        "&flowStatus=%s" +
-                        "&consigneeCName=%s" +
-                        "&forwarderName=%s" +
-                        "&fkForwardingId=%s" +
-                        "&_=%s",
-                Urls.URL_SERVER_BASE,
-                pageNum,
-                pageSize,
-                billNo,
-                delivPlaceName,
-                rtnPlaceName,
-                flowStatus,
-                consigneeCName,
-                forwarderName,
-                fkForwardingId,
-                Calendar.getInstance().getTimeInMillis());
-
-        withToken(url, observer, RType.JSONObject, RMethod.GET);
-    }
-
-    /**
-     * 获取司机列表
-     * */
-    public void getDriverList(Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getDriverList",
-                Urls.URL_SERVER_BASE);
-
-        withToken(url, observer, RType.JSONArray, RMethod.GET);
-    }
-
-    /**
-     * 获取卡车列表
-     * */
-    public void getTruckList(Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/getTruckList",
-                Urls.URL_SERVER_BASE);
-
-        withToken(url, observer, RType.JSONArray, RMethod.GET);
-    }
-
-    /**
-     * 获取派车单列表信息
-     */
-    public void getDispatchList(int pageNum, int pageSize, String billNo,
-                                String forwardName, String consigneeCName, String delivTimeStart,
-                                String delivTimeEnd, String flowStatus, String oriBack, Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/forwardingOrder/dispatch/listData?" +
-                        "pageNum=%s" +
-                        "&pageSize=%s" +
-                        "&billNo=%s" +
-                        "&forwarderName=%s" +
-                        "&consigneeCName=%s" +
-                        "&delivTimeStart=%s" +
-                        "&delivTimeEnd=%s" +
-                        "&flowStatus=%s" +
-                        "&oriBack=%s" +
-                        "&_=%s",
-                Urls.URL_SERVER_BASE,
-                pageNum,
-                pageSize,
-                billNo,
-                forwardName,
-                consigneeCName,
-                delivTimeStart,
-                delivTimeEnd,
-                flowStatus,
-                oriBack,
-                Calendar.getInstance().getTimeInMillis());
-
-        withToken(url, observer, RType.JSONObject, RMethod.GET);
-    }
-
-    /**
-     * 获取车队信息列表
-     * */
-    public void getTeamList(int pageNum, int pageSize, String contact,
-                            String motorcadeCode, String motorcadeName, String chiAccount,
-                            String accountName, String cardId, String nick,
-                            Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/motorcade/listData?" +
-                        "pageNum=%s" +
-                        "&pageSize=%s" +
-                        "&motorcadeName=%s" +
-                        "&motorcadeCode=%s" +
-                        "&contactPerson=%s" +
-                        "&chiAccount=%s" +
-                        "&accountCName=%s" +
-                        "&idCardNo=%s" +
-                        "&nickName=%s" +
-                        "&_=%s",
-                Urls.URL_SERVER_BASE,
-                pageNum,
-                pageSize,
-                contact,
-                motorcadeCode,
-                motorcadeName,
-                chiAccount,
-                accountName,
-                cardId,
-                nick,
-                Calendar.getInstance().getTimeInMillis());
-
-        withToken(url, observer, RType.JSONObject, RMethod.GET);
-    }
-
-    /**
-     * 修改车队账号启用状态
-     * @param status 状态：0 停用，1 启用
-     * */
-    public void modifyTeamUsable(String motorcadeStaffId, int status, Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/motorcade/changeInUseStatus?" +
-                        "enteMotorcadeStaffId=%s" +
-                        "&inUse=%s" +
-                        "&_=%s",
-                Urls.URL_SERVER_BASE,
-                motorcadeStaffId,
-                status,
-                Calendar.getInstance().getTimeInMillis());
-
-        withToken(url, observer, RType.JSONObject, RMethod.GET);
-    }
-
-    /**
-     * 获取车辆信息列表
-     * */
-    public void getTruckList(int pageNum, int pageSize, String truckNo, String truckType,
-                             String drivingLicNo, String carryCap, Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/motorcade/truck/listData?" +
-                        "pageNumber=%s" +
-                        "&pageSize=%s" +
-                        "&truckNo=%s" +
-                        "&truckType=%s" +
-                        "&drivingLicNo=%s" +
-                        "&carryCap=%s" +
-                        "&_=%s",
-                Urls.URL_SERVER_BASE,
-                pageNum,
-                pageSize,
-                truckNo,
-                truckType,
-                drivingLicNo,
-                carryCap,
-                Calendar.getInstance().getTimeInMillis());
-
-        withToken(url, observer, RType.JSONObject, RMethod.GET);
-    }
-
-    /**
-     * 修改司机信息
-     *
-     * @http method get
-     * */
-    public void modifyDriverInfo(String id, String fkMotorcadeId, String chiAccount, String chiPassword,
-                                 String accountCName, String cardNo, String phone, String nick, String truckNo,
-                                 Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/motorcade/staff/save?" +
-                        "id=%s" +
-                        "&fkMotorcadeId=%s" +
-                        (TextUtils.isEmpty(chiAccount) ? "%s" : "&chiAccount=%s") +
-                        (TextUtils.isEmpty(chiPassword) ? "%s" : "&chiPassword=%s") +
-                        "&accountCName=%s" +
-                        "&idCardNo=%s" +
-                        "&phone=%s" +
-                        "&nickName=%s" +
-                        "&truckNo=%s",
-                Urls.URL_SERVER_BASE,
-                id,
-                fkMotorcadeId,
-                (TextUtils.isEmpty(chiAccount) ? "" : chiAccount),
-                (TextUtils.isEmpty(chiPassword) ? "" : chiPassword),
-                accountCName,
-                cardNo,
                 phone,
-                nick,
-                truckNo
-        );
+                type);
+
+        ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+    }
+
+    /**
+     * 注册用户
+     * */
+    public void register(String phone, String pwd, String code, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/register?" +
+                "phoneNumber=%s" +
+                "&password=%s" +
+                "&smsCode=%s",
+                Urls.URL_SERVER_BASE,
+                phone,
+                pwd,
+                code);
+
+        ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+    }
+
+    /**
+     * 重置密码
+     * */
+    public void retrieve(String phone, String pwd, String code, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/resetPassword?" +
+                        "phoneNumber=%s" +
+                        "&password=%s" +
+                        "&smsCode=%s",
+                Urls.URL_SERVER_BASE,
+                phone,
+                pwd,
+                code);
+
+        ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+    }
+
+    /**
+     * 修改密码
+     * */
+    public void resetPassword(String phone, String pwdOld, String pwdNew, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/modifyPassword?" +
+                        "phoneNumber=%s" +
+                        "&oldPassword=%s" +
+                        "&newPassword=%s",
+                Urls.URL_SERVER_BASE,
+                phone,
+                pwdOld,
+                pwdNew);
+
+        ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+    }
+
+
+    /**
+     * 获取用户基本信息
+     * */
+    public void getRoleInfo(String acc, Observer observer) {
+        Observable.create(new ObservableOnSubscribe<JSONObject>() {
+            @Override
+            public void subscribe(ObservableEmitter<JSONObject> emitter) throws Exception {
+                emitter.onNext(JSON.parseObject("{\n" +
+                        "\t\"success\": \"true\",\n" +
+                        "\t\"failReason\": \"\",\n" +
+                        "\t\"data\": \"{\\\"userName\\\":\\\"cargo\\\",\\\"cnName\\\": \\\"张三\\\",\\\"phoneNumber\\\":\\\"15012341234\\\",\\\"roleInfo\\\": \\\"11111||22222||33333||44444||55555\\\",\\\"driverInfo\\\": \\\"{\\\\\\\"nickName\\\\\\\":\\\\\\\"小张\\\\\\\",\\\\\\\"driveLicenseType\\\\\\\":\\\\\\\"B2\\\\\\\",\\\\\\\"driveLicenseNo\\\\\\\":\\\\\\\"6351263416\\\\\\\",\\\\\\\"idCardNo\\\\\\\":\\\\\\\"3713241231413\\\\\\\",\\\\\\\"motorcadeName\\\\\\\":\\\\\\\"第一车队\\\\\\\",\\\\\\\"contactPerson\\\\\\\":\\\\\\\"李四\\\\\\\",\\\\\\\"attachStatus\\\\\\\":\\\\\\\"1\\\\\\\",\\\\\\\"truckNo\\\\\\\":\\\\\\\"鲁A26533\\\\\\\"}\\\"}\"\n" +
+                        "}"));
+            }
+        })
+                .delay(1500, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+
+//        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/getDriverInfo?",
+//                Urls.URL_SERVER_BASE);
+//        withToken(url, observer, RType.JSONObject, RMethod.GET);
+    }
+
+    /**
+     * 修改用户基本信息
+     * */
+    public void modifyRoleInfo(String name, String id, String license, String licenseType, String truck, Observer observer) {
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/updateDriverInfo?" +
+                        "userName=%s" +
+                        "&cnName=%s" +
+                        "&idCardNo=%s" +
+                        "&nickName=%s" +
+                        "&truckNo=%s" +
+                        "&driveLicenseType=%s" +
+                        "&driveLicenseNo=%s",
+                Urls.URL_SERVER_BASE,
+                name,
+                name,
+                id,
+                "",
+                truck,
+                licenseType,
+                license);
+
+        ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+    }
+
+    /**
+     * 获取车队列表
+     * @param keyWord 模糊查询关键字
+     * */
+    public Observable getMotorcadeList(String keyWord) {
+
+        if (true) {
+            return Observable.create(new ObservableOnSubscribe() {
+                @Override
+                public void subscribe(ObservableEmitter emitter) throws Exception {
+                    emitter.onNext(JSON.parseObject("{\n" +
+                            "    \"success\": true,\n" +
+                            "    \"failReason\": \"\",\n" +
+                            "    \"data\": [\n" +
+                            "        {\n" +
+                            "            \"id\": \"376e83da-9a7c-4e4d-8521-00c54e0fbd79\",\n" +
+                            "            \"motorcadeName\": \"主车队\",\n" +
+                            "            \"contactPerson\": null\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"id\": \"8425d366-4f23-451a-9e12-2eb1d721cb9a\",\n" +
+                            "            \"motorcadeName\": \"次车队\",\n" +
+                            "            \"contactPerson\": \"小明\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"id\": \"40f8deab-87bc-41b4-adb6-a4f09ad98cf3\",\n" +
+                            "            \"motorcadeName\": \"次车队2\",\n" +
+                            "            \"contactPerson\": null\n" +
+                            "        }\n" +
+                            "    ]\n" +
+                            "}"));
+                }
+            })
+                    .delay(2000, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread());
+        }
+
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/getMotorcadeList?" +
+                        "keyword=%s",
+                Urls.URL_SERVER_BASE,
+                keyWord);
+
+        return ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    /**
+     * 申请挂靠车队
+     * */
+    public void applyAttach(String user, String motorcadeId, Observer observer) {
+
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/applyAttach?" +
+                        "userName=%s" +
+                        "&motorcadeId=%s",
+                Urls.URL_SERVER_BASE,
+                user,
+                motorcadeId);
+
+        ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+    }
+
+    /**
+     * 获取派车单列表
+     * */
+    public void getOrderList(int page, int pageSize, String status, Observer observer) {
+
+        if (true) {
+            Observable.create(new ObservableOnSubscribe<JSONObject>() {
+                @Override
+                public void subscribe(ObservableEmitter<JSONObject> emitter) throws Exception {
+                    emitter.onNext(JSON.parseObject("{\n" +
+                            "    \"success\": \"true\",\n" +
+                            "    \"failReason\": \"\",\n" +
+                            "    \"data\": \"{\\\"total\\\":\\\"3\\\",\\\"list\\\":[{\\\"id\\\":\\\"2b09d34f14664625bbcd3d875d24a118\\\",\\\"billNo\\\":\\\"提单号\\\",\\\"consigneeCName\\\":\\\"收货人\\\",\\\"forwarderName\\\":\\\"货代\\\",\\\"addr\\\":\\\"送货地址\\\",\\\"delivTime\\\":\\\"送货时间\\\",\\\"cntrNo\\\":\\\"箱号\\\",\\\"cntrSizeCode\\\":\\\"集装箱尺寸\\\",\\\"cntrTypeCode\\\":\\\"箱型\\\",\\\"driverName\\\":\\\"提箱司机\\\",\\\"truckNo\\\":\\\"提箱车牌号\\\",\\\"delivPlaceName\\\":\\\"提箱地点\\\",\\\"tStatus\\\":\\\"提箱状态\\\",\\\"rtnDriverName\\\":\\\"还箱司机\\\",\\\"rtnTruckNo\\\":\\\"还箱车牌号\\\",\\\"rtnPlaceName\\\":\\\"还箱地点\\\",\\\"rStatus\\\":\\\"还箱状态\\\"},{\\\"id\\\":\\\"2b09d34f14664625bbcd3d875d24a118\\\",\\\"billNo\\\":\\\"提单号\\\",\\\"consigneeCName\\\":\\\"收货人\\\",\\\"forwarderName\\\":\\\"货代\\\",\\\"addr\\\":\\\"送货地址\\\",\\\"delivTime\\\":\\\"送货时间\\\",\\\"cntrNo\\\":\\\"箱号\\\",\\\"cntrSizeCode\\\":\\\"集装箱尺寸\\\",\\\"cntrTypeCode\\\":\\\"箱型\\\",\\\"driverName\\\":\\\"提箱司机\\\",\\\"truckNo\\\":\\\"提箱车牌号\\\",\\\"delivPlaceName\\\":\\\"提箱地点\\\",\\\"tStatus\\\":\\\"提箱状态\\\",\\\"rtnDriverName\\\":\\\"还箱司机\\\",\\\"rtnTruckNo\\\":\\\"还箱车牌号\\\",\\\"rtnPlaceName\\\":\\\"还箱地点\\\",\\\"rStatus\\\":\\\"还箱状态\\\"},{\\\"id\\\":\\\"2b09d34f14664625bbcd3d875d24a118\\\",\\\"billNo\\\":\\\"提单号\\\",\\\"consigneeCName\\\":\\\"收货人\\\",\\\"forwarderName\\\":\\\"货代\\\",\\\"addr\\\":\\\"送货地址\\\",\\\"delivTime\\\":\\\"送货时间\\\",\\\"cntrNo\\\":\\\"箱号\\\",\\\"cntrSizeCode\\\":\\\"集装箱尺寸\\\",\\\"cntrTypeCode\\\":\\\"箱型\\\",\\\"driverName\\\":\\\"提箱司机\\\",\\\"truckNo\\\":\\\"提箱车牌号\\\",\\\"delivPlaceName\\\":\\\"提箱地点\\\",\\\"tStatus\\\":\\\"提箱状态\\\",\\\"rtnDriverName\\\":\\\"还箱司机\\\",\\\"rtnTruckNo\\\":\\\"还箱车牌号\\\",\\\"rtnPlaceName\\\":\\\"还箱地点\\\",\\\"rStatus\\\":\\\"还箱状态\\\"}]}\"\n" +
+                            "}"));
+                }
+            })
+                    .delay(1000, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.io())
+                    .doOnError(new Consumer<Throwable>() {
+                        @Override
+                        public void accept(Throwable throwable) throws Exception {
+                            Log.e(TAG, "refreshList: doOnError = "+throwable);
+                        }
+                    })
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(observer);
+
+            return;
+        }
+
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/applyAttach?" +
+                        "userName=%s" +
+                        "&motorcadeId=%s",
+                Urls.URL_SERVER_BASE);
+
+        ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    /**
+     * 获取派车单列表
+     * */
+    public void getOrderDetail(String id, Observer observer) {
+
+        if (true) {
+            Observable.create(new ObservableOnSubscribe<JSONObject>() {
+                @Override
+                public void subscribe(ObservableEmitter<JSONObject> emitter) throws Exception {
+                    emitter.onNext(JSON.parseObject("{\n" +
+                            "\t\"success\": \"true\",\n" +
+                            "\t\"failReason\": \"\",\n" +
+                            "\t\"data\": \"{\\\"ID\\\":\\\"2b09d34f14664625bbcd3d875d24a118\\\",\\\"BILL_NO\\\":\\\"提单号\\\",\\\"CONSIGNEE_C_NAME\\\":\\\"收货人\\\",\\\"FORWARDER_NAME\\\":\\\"货代\\\",\\\"ADDR\\\":\\\"送货地址\\\",\\\"DELIV_TIME\\\":\\\"送货时间\\\",\\\"CNTR_NO\\\":\\\"箱号\\\",\\\"CNTR_SIZE_CODE\\\":\\\"集装箱尺寸\\\",\\\"CNTR_TYPE_CODE\\\":\\\"箱型\\\",\\\"DRIVER_NAME\\\":\\\"提箱司机\\\",\\\"TRUCK_NO\\\":\\\"提箱车牌号\\\",\\\"DELIV_PLACE_NAME\\\":\\\"提箱地点\\\",\\\"T_STATUS\\\":\\\"提箱状态\\\",\\\"RTN_DRIVER_NAME\\\":\\\"还箱司机\\\",\\\"RTN_TRUCK_NO\\\":\\\"还箱车牌号\\\",\\\"RTN_PLACE_NAME\\\":\\\"还箱地点\\\",\\\"R_STATUS\\\":\\\"还箱状态\\\"}\"\n" +
+                            "}"));
+                }
+            })
+                    .delay(1000, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.io())
+                    .doOnError(new Consumer<Throwable>() {
+                        @Override
+                        public void accept(Throwable throwable) throws Exception {
+                            Log.e(TAG, "refreshList: doOnError = "+throwable);
+                        }
+                    })
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(observer);
+
+            return;
+        }
+
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/applyAttach?" +
+                        "userName=%s" +
+                        "&motorcadeId=%s",
+                        Urls.URL_SERVER_BASE);
+
+        ApiManager.getInstance().getRetrofitService().getObj("", url)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    /**
+     * 接单
+     * @param id 派车单ID
+     * @param type T-提箱状态，R-还箱状态，A-同时
+     * */
+    public void acceptOrder(String id, String type, Observer observer) {
+
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/accept?" +
+                        "dispatchingId=%s" +
+                        "&type=%s",
+                        Urls.URL_SERVER_BASE,
+                        id,
+                        type);
         withToken(url, observer, RType.JSONObject, RMethod.GET);
     }
 
     /**
-     * 物流状态跟踪
+     * 拒绝、撤销
+     * @param id 派车单ID
+     * @param type T-提箱状态，R-还箱状态，A -同时
      * */
-    public void getStatusRecord(String billNo, Observer<?> observer) {
-        String url = String.format(Locale.CHINA, "%s/logistics/logisticsState/getStatusRecord?" +
-                        "billNo=%s" +
-                        "&_=%s",
-                Urls.URL_SERVER_BASE,
-                billNo,
-                Calendar.getInstance().getTimeInMillis());
+    public void RefuseOrCancelOrder(String id, String type, Observer observer) {
 
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/reject?" +
+                        "dispatchingId=%s" +
+                        "&type=%s",
+                Urls.URL_SERVER_BASE,
+                id,
+                type);
+        withToken(url, observer, RType.JSONObject, RMethod.GET);
+    }
+
+
+    /**
+     * 确认提箱、还箱（司机端自行操作）
+     * @param id 派车单ID
+     * @param type T-提箱状态，R-还箱状态
+     * */
+    public void confirmOrder(String id, String type, Observer observer) {
+
+        String url = String.format(Locale.CHINA, "%s/logistics/driverApp/confirm?" +
+                        "dispatchingId=%s" +
+                        "&type=%s",
+                Urls.URL_SERVER_BASE,
+                id,
+                type);
         withToken(url, observer, RType.JSONObject, RMethod.GET);
     }
 }

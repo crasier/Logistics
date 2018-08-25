@@ -16,4 +16,22 @@
         <item>是</item>
         <item>否</item>
     </array>
+    <string-array name="plate_type">
+        <item>空</item>
+        <item>A1</item>
+        <item>A2</item>
+        <item>A3</item>
+        <item>B1</item>
+        <item>B2</item>
+        <item>C1</item>
+        <item>C2</item>
+        <item>C3</item>
+        <item>C4</item>
+        <item>D</item>
+        <item>E</item>
+        <item>F</item>
+        <item>M</item>
+        <item>N</item>
+        <item>P</item>
+    </string-array>
 </resources>
