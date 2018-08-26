@@ -39,6 +39,8 @@ import com.sdeport.logistics.driver.constant.Constants;
 import com.sdeport.logistics.driver.server.WebRequest;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
@@ -198,6 +200,15 @@ public class OrdersFragment extends BaseFragment {
             pager.setCurrentItem(index, false);
         }
     };
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    protected void onEvent(Event event) {
+        switch (event.getTag()) {
+            case Event.TAG_REFRESH_ING:
+                refreshList(currentPageIndex);
+                break;
+        }
+    }
 
     private void getDataList(final boolean add, final int target) {
 
@@ -565,7 +576,7 @@ public class OrdersFragment extends BaseFragment {
             colDialog.setCanceledOnTouchOutside(false);
             colDialog.show();
         }else {
-            saveCollection(true, order);
+            saveCollection(false, order);
         }
     }
 
@@ -580,6 +591,7 @@ public class OrdersFragment extends BaseFragment {
             MyToast.show(mActivity, R.string.order_collect_success);
         }
         EventBus.getDefault().post(new Event(Event.TAG_REFRESH_ING));
+        refreshList(currentPageIndex);
     }
 
     @Override

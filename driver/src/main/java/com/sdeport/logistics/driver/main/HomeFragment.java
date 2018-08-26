@@ -3,6 +3,7 @@ package com.sdeport.logistics.driver.main;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -41,6 +42,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import butterknife.BindView;
@@ -97,6 +100,8 @@ public class HomeFragment extends BaseFragment {
 
         EventBus.getDefault().register(this);
         dataLists = new SparseArray<>();
+        dataLists.put(ORDER_TYPE_NEW, new OrderPage());
+        dataLists.put(ORDER_TYPE_ING, new OrderPage());
 
         unbinder = ButterKnife.bind(this, contentView);
         mInflater = inflater;
@@ -152,6 +157,7 @@ public class HomeFragment extends BaseFragment {
             String id = "";
             if (TextUtils.isEmpty(Prefer.getInstance().getString(Constants.KEY_ORDER_ING, ""))) {
                 dataLists.get(target).setLoading(false);
+                dataLists.get(ORDER_TYPE_ING).getDatas().clear();
                 refreshFinished();
                 return;
             }else {
@@ -357,6 +363,7 @@ public class HomeFragment extends BaseFragment {
                         dialogInterface.dismiss();
                         Prefer.getInstance().putString(Constants.KEY_ORDER_ING, "");
                         User.getUser().setCollectedOrder(null);
+                        EventBus.getDefault().post(new Event(Event.TAG_REFRESH_ING));
                         refreshList(false, ORDER_TYPE_ING);
                     }
                 })
