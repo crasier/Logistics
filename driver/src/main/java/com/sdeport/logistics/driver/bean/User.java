@@ -9,6 +9,8 @@ public class User {
     private String token;
     private Role role;
 
+    private Order collectedOrder;//正在进行
+
     private static class LazyHolder {
         public static final User INSTANCE = new User();
     }
@@ -63,5 +65,13 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Order getCollectedOrder() {
+        return collectedOrder;
+    }
+
+    public void setCollectedOrder(Order collectedOrder) {
+        this.collectedOrder = collectedOrder;
     }
 }

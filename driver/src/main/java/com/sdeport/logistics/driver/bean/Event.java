@@ -5,9 +5,10 @@ import com.sdeport.logistics.driver.server.WebRequest;
 import io.reactivex.Observer;
 import okhttp3.RequestBody;
 
-public class EventBean {
+public class Event {
 
     public static final int TAG_SESSION_INVALID = 1;//登录使用的session已经失效，需要重新登录
+    public static final int TAG_REFRESH_ING = 2;//通知刷新正在进行的派车单
 
     private int tag;
     private String url;
@@ -16,7 +17,7 @@ public class EventBean {
     private WebRequest.RType type;
     private WebRequest.RMethod method;
 
-    public EventBean(int tag) {
+    public Event(int tag) {
         this.tag = tag;
     }
 

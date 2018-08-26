@@ -21,6 +21,8 @@ import com.sdeport.logistics.driver.mine.AboutActivity;
 import com.sdeport.logistics.driver.mine.SettingActivity;
 import com.sdeport.logistics.driver.mine.UserInfoActivity;
 
+import org.greenrobot.eventbus.EventBus;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -132,6 +134,7 @@ public class MineFragment extends BaseFragment {
                 }else {
                     intent = new Intent(getContext(), BindResultActivity.class);
                     intent.putExtra("name", driver.getMotorcadeName());
+                    intent.putExtra("status", driver.getAttachStatus());
                 }
                 startActivity(intent);
                 break;

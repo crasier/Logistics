@@ -22,6 +22,7 @@
         </activity>
 
         <activity android:name=".main.MainActivity"
+                  android:launchMode="singleTop"
             android:theme="@style/TransTheme"
             android:configChanges="locale|orientation|keyboard"
             android:screenOrientation="portrait"/>

@@ -6,39 +6,39 @@ import java.io.Serializable;
 
 public class Order implements Serializable {
 
-    @JSONField(name = "ID")
+    @JSONField(name = "id")
     private String id;
-    @JSONField(name = "BILL_NO")//提单号
+    @JSONField(name = "billNo")//提单号
     private String billNo;
-    @JSONField(name = "CONSIGNEE_C_NAME")//收货人
+    @JSONField(name = "consigneeCName")//收货人
     private String owner;
-    @JSONField(name = "FORWARDER_NAME")//货代
+    @JSONField(name = "forwarderName")//货代
     private String forwarder;
-    @JSONField(name = "ADDR")//送货地址
+    @JSONField(name = "addr")//送货地址
     private String address;
-    @JSONField(name = "DELIV_TIME")//送货时间
+    @JSONField(name = "delivTime")//送货时间
     private String delivTime;
-    @JSONField(name = "CNTR_NO")//箱号
+    @JSONField(name = "cntrNo")//箱号
     private String cntrNo;
-    @JSONField(name = "CNTR_SIZE_CODE")//集装箱尺寸
+    @JSONField(name = "cntrSizeCode")//集装箱尺寸
     private String cntrSize;
-    @JSONField(name = "CNTR_TYPE_CODE")//箱型
+    @JSONField(name = "cntrTypeCode")//箱型
     private String cntrType;
-    @JSONField(name = "DRIVER_NAME")//提箱司机
+    @JSONField(name = "driverName")//提箱司机
     private String driver;
-    @JSONField(name = "TRUCK_NO")//提箱车牌号
+    @JSONField(name = "truckNo")//提箱车牌号
     private String truck;
-    @JSONField(name = "DELIV_PLACE_NAME")//提箱地点
+    @JSONField(name = "delivPlaceName")//提箱地点
     private String delivPlace;
-    @JSONField(name = "T_STATUS")//提箱状态
+    @JSONField(name = "tStatus")//提箱状态
     private String tStatus;
-    @JSONField(name = "RTN_DRIVER_NAME")//还箱司机
+    @JSONField(name = "rtnDriverName")//还箱司机
     private String driverRtn;
-    @JSONField(name = "RTN_TRUCK_NO")//还箱车牌号
+    @JSONField(name = "rtnTruckNo")//还箱车牌号
     private String truckRtn;
-    @JSONField(name = "RTN_PLACE_NAME")//还箱地点
+    @JSONField(name = "rtnPlaceName")//还箱地点
     private String delivPlaceRtn;
-    @JSONField(name = "R_STATUS")//还箱状态
+    @JSONField(name = "rStatus")//还箱状态
     private String rStatus;
 
     private boolean spread;

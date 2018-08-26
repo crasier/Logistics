@@ -70,6 +70,8 @@
     <string name="order_receive">接单</string>
     <string name="order_refuse">拒绝</string>
     <string name="order_cancel">撤销</string>
+    <string name="order_confirm_get">提箱完成</string>
+    <string name="order_confirm_rtn">还箱完成</string>
 
     <string name="order_list_all">全部</string>
     <string name="order_list_new">未接单</string>
@@ -109,6 +111,7 @@
 
     <string name="group_select_hint">车队名称</string>
     <string name="group_bind_apply">申请挂靠</string>
+    <string name="group_bind_cancel">撤销申请</string>
     <string name="group_info">车队信息</string>
     <string name="group_name">车队名称</string>
     <string name="group_contact_person">联系人</string>
@@ -121,7 +124,34 @@
 
     <string name="group_bound_info">挂靠信息</string>
     <string name="group_bound">您已挂靠的车队：</string>
+    <string name="group_bound_ing">您申请挂靠的车队：</string>
     <string name="group_unbind_description">操作说明：\n
         1、如需解除挂靠，请联系车队管理员解除。\n
         2、如有疑问，请拨打客户服务电话：95198</string>
+
+    <string name="order_status_unknown">未知状态</string>
+
+    <string name="order_status_t_0">未派车</string>
+    <string name="order_status_t_1">待接单</string>
+    <string name="order_status_t_2">已接单</string>
+    <string name="order_status_t_3">已拒绝</string>
+    <string name="order_status_t_4">已提箱</string>
+
+    <string name="order_status_r_0">未派车</string>
+    <string name="order_status_r_1">待接单</string>
+    <string name="order_status_r_2">已接单</string>
+    <string name="order_status_r_3">已拒绝</string>
+    <string name="order_status_r_4">已还箱待确认</string>
+    <string name="order_status_r_5">还箱完成</string>
+
+    <!--提示语-->
+    <string name="order_collect_success">已将派车单添加至首页“正在进行”</string>
+    <string name="order_remove_success">已将派车单从“正在进行”移除</string>
+    <string name="order_collect_exchange">是否将“正在进行”派车单中的:%s替换为该派车单:%s?</string>
+    <string name="order_collect_remove">确认将该派车单移除“正在进行”？</string>
+    <string name="order_accept_confirm">确定要接受该派车单?</string>
+    <string name="order_refuse_confirm">确定要拒绝该派车单?</string>
+    <string name="order_cancel_confirm">确定要撤销该派车单?</string>
+    <string name="order_confirm_t">确认提箱？</string>
+    <string name="order_confirm_r">确认还箱?</string>
 </resources>

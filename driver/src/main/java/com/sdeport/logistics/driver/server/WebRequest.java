@@ -5,15 +5,13 @@ import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.sdeport.logistics.driver.bean.EventBean;
+import com.sdeport.logistics.driver.bean.Event;
 import com.sdeport.logistics.driver.constant.Urls;
 import com.sdeport.logistics.driver.server.retrofit.ApiManager;
 import com.sdeport.logistics.driver.server.retrofit.TokenLoader;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.InputStream;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -163,7 +161,7 @@ public class WebRequest {
             ob.unsubscribeOn(Schedulers.io());
         }
         observables.clear();
-        EventBean bean = new EventBean(EventBean.TAG_SESSION_INVALID);
+        Event bean = new Event(Event.TAG_SESSION_INVALID);
         bean.setUrl(url);
         bean.setObserver(observer);
         bean.setType(type);

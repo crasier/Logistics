@@ -19,7 +19,7 @@ public class SplashActivity extends BaseActivity{
     protected void initUI(Bundle savedInstanceState) {
         addContentView(R.layout.layout_activity_splash);
         mHandler.postDelayed(jumpToMain, 1500);
-        mHandler.postDelayed(loginFailRunnable, 5000);
+
     }
 
     private Runnable jumpToMain = new Runnable() {
@@ -36,7 +36,7 @@ public class SplashActivity extends BaseActivity{
 //                intent.setClass(SplashActivity.this, MainActivity.class);
                 User.getUser().setAccount(Prefer.getInstance().getString(Constants.KEY_PREFER_ACCOUNT, ""));
                 User.getUser().setPassword(Prefer.getInstance().getString(Constants.KEY_PREFER_PASSWORD, ""));
-
+                mHandler.postDelayed(loginFailRunnable, 5000);
                 SplashActivity.super.login();
             }
         }
@@ -56,12 +56,11 @@ public class SplashActivity extends BaseActivity{
      * */
     @Override
     public void onLoginResult(boolean result) {
+        mHandler.removeCallbacks(loginFailRunnable);
         if (result) {
-            mHandler.removeCallbacks(loginFailRunnable);
             startActivity(new Intent(this, MainActivity.class));
             finish();
         }else {
-            mHandler.removeCallbacks(loginFailRunnable);
             mHandler.postDelayed(loginFailRunnable, 3000);
         }
     }

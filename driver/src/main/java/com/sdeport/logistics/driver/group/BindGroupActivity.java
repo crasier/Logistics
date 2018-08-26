@@ -241,6 +241,7 @@ public class BindGroupActivity extends BaseActivity {
                 dismissDialog();
                 Intent resultIntent = new Intent(BindGroupActivity.this, BindResultActivity.class);
                 resultIntent.putExtra("name", motorSelected.getName());
+                resultIntent.putExtra("status", "1");
                 startActivity(resultIntent);
                 finish();
             }

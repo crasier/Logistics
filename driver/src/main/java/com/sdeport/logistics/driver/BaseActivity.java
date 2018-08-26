@@ -31,7 +31,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.sdeport.logistics.common.utils.MyToast;
 import com.sdeport.logistics.common.utils.Prefer;
 import com.sdeport.logistics.driver.bean.Driver;
-import com.sdeport.logistics.driver.bean.EventBean;
+import com.sdeport.logistics.driver.bean.Event;
 import com.sdeport.logistics.driver.bean.Role;
 import com.sdeport.logistics.driver.bean.User;
 import com.sdeport.logistics.driver.constant.Constants;
@@ -66,7 +66,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
     private Dialog loadingDialog;
 
-    private EventBean mEvent;
+    private Event mEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -246,9 +246,9 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(EventBean event) {
+    public void onMessageEvent(Event event) {
         switch (event.getTag()) {
-            case EventBean.TAG_SESSION_INVALID:
+            case Event.TAG_SESSION_INVALID:
 //                startActivity(new Intent(this, WebLoginActivity.class));
                 mEvent = event;
                 login();
@@ -258,10 +258,10 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
     protected void login() {
 
-//        if (Constants.DEBUG) {
-//            onLoginResult(true);
-//            return;
-//        }
+        if (Constants.DEBUG) {
+            getRoleDetail();
+            return;
+        }
 
         needAutoLogin = true;
 
@@ -418,7 +418,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         WebRequest.getInstance().getRoleInfo(User.getUser().getAccount(), new Observer<JSONObject>() {
             @Override
             public void onSubscribe(Disposable d) {
-                createDialog(false);
+
             }
 
             @Override

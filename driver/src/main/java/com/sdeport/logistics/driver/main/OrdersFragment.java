@@ -1,6 +1,8 @@
 package com.sdeport.logistics.driver.main;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.RemoteCallbackList;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -12,6 +14,7 @@ import android.view.View;
 import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -24,14 +27,22 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.sdeport.logistics.common.utils.MyToast;
+import com.sdeport.logistics.common.utils.Prefer;
+import com.sdeport.logistics.common.widgets.CustomDialog;
 import com.sdeport.logistics.driver.BaseFragment;
 import com.sdeport.logistics.driver.R;
+import com.sdeport.logistics.driver.bean.Event;
 import com.sdeport.logistics.driver.bean.Order;
 import com.sdeport.logistics.driver.bean.OrderPage;
+import com.sdeport.logistics.driver.bean.User;
+import com.sdeport.logistics.driver.constant.Constants;
 import com.sdeport.logistics.driver.server.WebRequest;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Random;
@@ -199,7 +210,10 @@ public class OrdersFragment extends BaseFragment {
         }
 
         dataLists.get(target).setLoading(true);
-        WebRequest.getInstance().getOrderList(dataLists.get(target).getCurrentPage(), dataLists.get(target).getCountPerPage(), String.valueOf(target), new Observer<JSONObject>() {
+        WebRequest.getInstance().getOrderList(
+                add ? dataLists.get(target).getDatas().size() / dataLists.get(target).getCountPerPage() + 1 : 1,
+                dataLists.get(target).getCountPerPage(),
+                String.valueOf(target), new Observer<JSONObject>() {
             @Override
             public void onSubscribe(Disposable d) {
                 Log.e(TAG, "refreshList: onSubscribe = "+target);
@@ -255,10 +269,6 @@ public class OrdersFragment extends BaseFragment {
             public void onComplete() {
             }
         });
-
-        refreshList(currentPageIndex);
-
-        refresher.finishRefresh(true);
     }
 
     private void refreshList(int pageIndex) {
@@ -280,27 +290,296 @@ public class OrdersFragment extends BaseFragment {
         if (allFinished) {
             refresher.finishRefresh();
         }
+        refreshList(currentPageIndex);
     }
 
     private void onViewClick(View v, int position) {
+        Order order = dataLists.get(currentPageIndex).getDatas().get(position);
         switch (v.getId()) {
-            case R.id.receive:
-                MyToast.show(mActivity, "page:"+currentPageIndex+"接受 "+position);
+            case R.id.accept_t:
+                accept(order.getId(), "T");
                 break;
-            case R.id.refuse:
-                MyToast.show(mActivity, "page:"+currentPageIndex+"拒绝 "+position);
+            case R.id.accept_r:
+                accept(order.getId(), "R");
                 break;
-            case R.id.cancel:
-                MyToast.show(mActivity, "page:"+currentPageIndex+"撤销 "+position);
+            case R.id.refuse_t:
+                refuseOrCancel(true, order.getId(), "T");
                 break;
-            case R.id.check:
-                MyToast.show(mActivity, "page:"+currentPageIndex+"查看 "+position);
+            case R.id.refuse_r:
+                refuseOrCancel(true, order.getId(), "R");
+                break;
+            case R.id.cancel_t:
+                refuseOrCancel(false, order.getId(), "T");
+                break;
+            case R.id.cancel_r:
+                refuseOrCancel(false, order.getId(), "R");
+                break;
+            case R.id.confirm_t:
+                confirm(true, order.getId(), "T");
+                break;
+            case R.id.confirm_r:
+                confirm(false, order.getId(), "R");
                 break;
             case R.id.order_simple:
                 dataLists.get(currentPageIndex).getDatas().get(position).setSpread(!dataLists.get(currentPageIndex).getDatas().get(position).isSpread());
                 break;
+            case R.id.collect:
+                setCollectStatus(order);
+                break;
         }
         ((ListerAdapter) tabViews.get(currentPageIndex).getAdapter()).notifyDataSetChanged();
+    }
+
+    /**
+     * 弹出对话框，确定接单
+     * */
+    private void accept(final String id, final String type) {
+        CustomDialog acceptDialog = new CustomDialog.Builder(mActivity)
+                .setMessage(getString(R.string.order_accept_confirm))
+                .setPositiveButton(R.string.sure, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        acceptOrder(id, type);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+        acceptDialog.setCanceledOnTouchOutside(false);
+        acceptDialog.show();
+    }
+
+    /**
+     * 接单
+     * @param id 派车单ID
+     * @param type T-提箱状态，R-还箱状态
+     * */
+    private void acceptOrder(String id, String type) {
+        WebRequest.getInstance().acceptOrder(id, type, new Observer<JSONObject>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(JSONObject o) {
+                if (o == null) {
+                    onError(null);
+                    return;
+                }
+                if (!o.getBooleanValue("success")) {
+                    onError(new Throwable(o.getString("failReason")));
+                    return;
+                }
+                mActivity.dismissDialog();
+
+                MyToast.show(mActivity, R.string.operation_success);
+                getDataList(false, ORDER_TYPE_ALL);
+                getDataList(false, ORDER_TYPE_NEW);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                mActivity.dismissDialog();
+                MyToast.show(mActivity, e == null || TextUtils.isEmpty(e.getMessage()) ?
+                        getString(R.string.operation_failed) : e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+    }
+
+    /**
+     * 弹出对话框，拒绝/撤销派车单
+     * */
+    private void refuseOrCancel(boolean refuse, final String id, final String type) {
+        CustomDialog acceptDialog = new CustomDialog.Builder(mActivity)
+                .setMessage(getString(refuse ? R.string.order_refuse_confirm : R.string.order_cancel_confirm))
+                .setPositiveButton(R.string.sure, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        refuseOrCancelOrder(id, type);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+        acceptDialog.setCanceledOnTouchOutside(false);
+        acceptDialog.show();
+    }
+
+    /**
+     * 拒绝、撤销
+     * @param id 派车单ID
+     * @param type T-提箱状态，R-还箱状态,A-同时操作
+     * */
+    private void refuseOrCancelOrder(String id, String type) {
+        WebRequest.getInstance().RefuseOrCancelOrder(id, type, new Observer<JSONObject>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(JSONObject o) {
+                if (o == null) {
+                    onError(null);
+                    return;
+                }
+                if (!o.getBooleanValue("success")) {
+                    onError(new Throwable(o.getString("failReason")));
+                    return;
+                }
+                mActivity.dismissDialog();
+
+                MyToast.show(mActivity, R.string.operation_success);
+                getDataList(false, ORDER_TYPE_NEW);
+                getDataList(false, ORDER_TYPE_ALL);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                mActivity.dismissDialog();
+                MyToast.show(mActivity, e == null || TextUtils.isEmpty(e.getMessage()) ?
+                        getString(R.string.operation_failed) : e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+    }
+
+    /**
+     * 弹出对话框,确认提箱/还箱
+     * */
+    private void confirm(boolean t, final String id, final String type) {
+        CustomDialog acceptDialog = new CustomDialog.Builder(mActivity)
+                .setMessage(getString(t ? R.string.order_confirm_t : R.string.order_confirm_r))
+                .setPositiveButton(R.string.sure, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        confirmOrder(id, type);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+        acceptDialog.setCanceledOnTouchOutside(false);
+        acceptDialog.show();
+    }
+
+    /**
+     * 确认提箱、还箱（司机端自行操作）
+     * @param id 派车单ID
+     * @param type T-提箱状态，R-还箱状态
+     * */
+    private void confirmOrder(String id, String type) {
+        WebRequest.getInstance().confirmOrder(id, type, new Observer<JSONObject>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(JSONObject o) {
+                if (o == null) {
+                    onError(null);
+                    return;
+                }
+                if (!o.getBooleanValue("success")) {
+                    onError(new Throwable(o.getString("failReason")));
+                    return;
+                }
+                mActivity.dismissDialog();
+
+                MyToast.show(mActivity, R.string.operation_success);
+                getDataList(false, ORDER_TYPE_ALL);
+                getDataList(false, ORDER_TYPE_ING);
+                getDataList(false, ORDER_TYPE_FINISHED);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                mActivity.dismissDialog();
+                MyToast.show(mActivity, e == null || TextUtils.isEmpty(e.getMessage()) ?
+                        getString(R.string.operation_failed) : e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+    }
+
+    /**
+     * 设置收藏状态
+     * */
+    private void setCollectStatus(final Order order) {
+        if (User.getUser().getCollectedOrder() != null) {
+            final boolean remove = order.getId().equals(User.getUser().getCollectedOrder().getId());
+            String msg = "";
+            if (remove) {
+                msg = getString(R.string.order_collect_remove);
+            }else {
+                msg = getString(R.string.order_collect_exchange,
+                        User.getUser().getCollectedOrder().getBillNo(),
+                        order.getBillNo());
+            }
+            CustomDialog colDialog = new CustomDialog.Builder(mActivity)
+                    .setMessage(msg)
+                    .setPositiveButton(R.string.sure, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            saveCollection(remove, order);
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .create();
+            colDialog.setCanceledOnTouchOutside(false);
+            colDialog.show();
+        }else {
+            saveCollection(true, order);
+        }
+    }
+
+    private void saveCollection(boolean remove, Order order) {
+        if (remove) {
+            Prefer.getInstance().putString(Constants.KEY_ORDER_ING, "");
+            User.getUser().setCollectedOrder(null);
+            MyToast.show(mActivity, R.string.order_remove_success);
+        }else {
+            Prefer.getInstance().putString(Constants.KEY_ORDER_ING, JSON.toJSONString(order));
+            User.getUser().setCollectedOrder(order);
+            MyToast.show(mActivity, R.string.order_collect_success);
+        }
+        EventBus.getDefault().post(new Event(Event.TAG_REFRESH_ING));
     }
 
     @Override
@@ -377,7 +656,12 @@ public class OrdersFragment extends BaseFragment {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            Order order = dataLists.get(currentPageIndex).getDatas().get(position);
+            if (dataLists.get(type).getDatas().size() < dataLists.get(type).getTotal()
+                    && position >= dataLists.get(type).getDatas().size()) {
+                getDataList(true, type);
+            }
+
+            Order order = dataLists.get(type).getDatas().get(position);
             holder.bill.setText(
                     String.format(Locale.CHINA, "%s:%s",
                             getString(R.string.order_ing_bill_no),
@@ -388,13 +672,12 @@ public class OrdersFragment extends BaseFragment {
                     onViewClick(v, position);
                 }
             });
-            holder.status.setText(getString(R.string.not_receive));
             holder.owner.setText(order.getOwner() == null ? "" : order.getOwner());
             holder.address.setText(order.getAddress() == null ? "" : order.getAddress());
 
-            setClicker(holder, position);
+            setCollectStatus(holder, position);
 
-            if (!dataLists.get(currentPageIndex).getDatas().get(position).isSpread()) {
+            if (!dataLists.get(type).getDatas().get(position).isSpread()) {
                 holder.arrow.setRotation(0);
                 holder.spreader.setVisibility(View.GONE);
                 return convertView;
@@ -402,6 +685,7 @@ public class OrdersFragment extends BaseFragment {
                 holder.arrow.setRotation(180);
                 holder.spreader.setVisibility(View.VISIBLE);
             }
+            setStatus(holder, position);
 
 //            holder.contact.setText("暂无此项信息,待删除");//TODO 货主联系方式是否需要
             holder.timeDelivery.setText(order.getDelivTime() == null ? "" : order.getDelivTime());
@@ -444,34 +728,183 @@ public class OrdersFragment extends BaseFragment {
             return convertView;
         }
 
-        private void setClicker(ViewHolder holder, final int position) {
-            holder.receive.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onViewClick(v, position);
+        private void setCollectStatus(ViewHolder holder, final int position) {
+            final Order order = orders.get(position);
+            if (!TextUtils.isEmpty(order.gettStatus()) || !TextUtils.isEmpty(order.getrStatus())) {
+                holder.collect.setVisibility(View.VISIBLE);
+                if (User.getUser().getCollectedOrder() != null &&
+                        User.getUser().getCollectedOrder().getId().equals(order.getId())) {
+                    holder.collect.setImageResource(R.drawable.icon_collected);
+                }else {
+                    holder.collect.setImageResource(R.drawable.icon_collect);
                 }
-            });
+                holder.collect.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onViewClick(view, position);
+                    }
+                });
+            }else {
+                holder.collect.setVisibility(View.INVISIBLE);
+            }
+        }
 
-            holder.refuse.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onViewClick(v, position);
-                }
-            });
+        /**
+         * 设置状态
+         * */
+        private void setStatus(ViewHolder holder, final int position) {
+            Order order = dataLists.get(type).getDatas().get(position);
 
-            holder.cancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onViewClick(v, position);
-                }
-            });
+            if (!TextUtils.isEmpty(order.gettStatus())) {
+                holder.tBtns.setVisibility(View.VISIBLE);
+                boolean accept = false;
+                boolean refuse = false;
+                boolean cancel = false;
+                boolean confirm = false;
 
-            holder.check.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onViewClick(v, position);
+                switch (order.getrStatus()) {
+                    case "0":
+                        holder.tStatus.setText(R.string.order_status_t_0);
+                        break;
+                    case "1":
+                        accept = true;
+                        refuse = true;
+                        holder.tStatus.setText(R.string.order_status_t_1);
+                        break;
+                    case "2":
+                        cancel = true;
+                        confirm = true;
+                        holder.tStatus.setText(R.string.order_status_t_2);
+                        break;
+                    case "3":
+                        holder.tStatus.setText(R.string.order_status_t_3);
+                        break;
+                    case "4":
+                        holder.tStatus.setText(R.string.order_status_t_4);
+                        break;
+                    default:
+                        holder.tStatus.setText(R.string.order_status_unknown);
+                        break;
                 }
-            });
+
+                holder.tAccept.setVisibility(accept ? View.VISIBLE : View.GONE);
+                holder.tRefuse.setVisibility(refuse ? View.VISIBLE : View.GONE);
+                holder.tCancel.setVisibility(cancel ? View.VISIBLE : View.GONE);
+                holder.tConfirm.setVisibility(confirm ? View.VISIBLE : View.GONE);
+
+                if (accept) {
+                    holder.tAccept.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onViewClick(view, position);
+                        }
+                    });
+                }
+
+                if (refuse) {
+                    holder.tRefuse.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onViewClick(view, position);
+                        }
+                    });
+                }
+                if (cancel) {
+                    holder.tCancel.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onViewClick(view, position);
+                        }
+                    });
+                }
+                if (confirm) {
+                    holder.tConfirm.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onViewClick(view, position);
+                        }
+                    });
+                }
+            }else {
+                holder.tBtns.setVisibility(View.GONE);
+            }
+
+            if (!TextUtils.isEmpty(order.getrStatus())) {
+                holder.rBtns.setVisibility(View.VISIBLE);
+                boolean accept = false;
+                boolean refuse = false;
+                boolean cancel = false;
+                boolean confirm = false;
+
+                switch (order.getrStatus()) {
+                    case "0":
+                        holder.rStatus.setText(R.string.order_status_r_0);
+                        break;
+                    case "1":
+                        accept = true;
+                        refuse = true;
+                        holder.rStatus.setText(R.string.order_status_r_1);
+                        break;
+                    case "2":
+                        cancel = true;
+                        confirm = true;
+                        holder.rStatus.setText(R.string.order_status_r_2);
+                        break;
+                    case "3":
+                        holder.rStatus.setText(R.string.order_status_r_3);
+                        break;
+                    case "4":
+                        holder.rStatus.setText(R.string.order_status_r_4);
+                        break;
+                    case "5":
+                        holder.rStatus.setText(R.string.order_status_r_5);
+                        break;
+                    default:
+                        holder.rStatus.setText(R.string.order_status_unknown);
+                        break;
+                }
+
+                holder.rAccept.setVisibility(accept ? View.VISIBLE : View.GONE);
+                holder.rRefuse.setVisibility(refuse ? View.VISIBLE : View.GONE);
+                holder.rCancel.setVisibility(cancel ? View.VISIBLE : View.GONE);
+                holder.rConfirm.setVisibility(confirm ? View.VISIBLE : View.GONE);
+
+                if (accept) {
+                    holder.rAccept.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onViewClick(view, position);
+                        }
+                    });
+                }
+
+                if (refuse) {
+                    holder.rRefuse.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onViewClick(view, position);
+                        }
+                    });
+                }
+                if (cancel) {
+                    holder.rCancel.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onViewClick(view, position);
+                        }
+                    });
+                }
+                if (confirm) {
+                    holder.rConfirm.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onViewClick(view, position);
+                        }
+                    });
+                }
+            }else {
+                holder.rBtns.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -480,8 +913,8 @@ public class OrdersFragment extends BaseFragment {
         protected ImageView arrow;
         @BindView(R.id.bill_no)
         protected TextView bill;
-        @BindView(R.id.status)
-        protected TextView status;
+        @BindView(R.id.collect)
+        protected ImageView collect;
         @BindView(R.id.owner)
         protected TextView owner;
         @BindView(R.id.address)
@@ -504,22 +937,35 @@ public class OrdersFragment extends BaseFragment {
         protected TextView driverGet;
         @BindView(R.id.address_get)
         protected TextView addrGet;
+        @BindView(R.id.status_t)
+        protected TextView tStatus;
+        @BindView(R.id.btns_get)
+        protected View tBtns;
+        @BindView(R.id.accept_t)
+        protected TextView tAccept;
+        @BindView(R.id.refuse_t)
+        protected TextView tRefuse;
+        @BindView(R.id.cancel_t)
+        protected TextView tCancel;
+        @BindView(R.id.confirm_t)
+        protected TextView tConfirm;
         @BindView(R.id.info_rtn)
         protected View infoRtn;
         @BindView(R.id.driver_rtn)
         protected TextView driverRtn;
         @BindView(R.id.address_rtn)
         protected TextView addrRtn;
-
-        @BindView(R.id.functions)
-        protected View funs;
-        @BindView(R.id.receive)
-        protected TextView receive;
-        @BindView(R.id.refuse)
-        protected TextView refuse;
-        @BindView(R.id.cancel)
-        protected TextView cancel;
-        @BindView(R.id.check)
-        protected TextView check;
+        @BindView(R.id.status_r)
+        protected TextView rStatus;
+        @BindView(R.id.btns_rtn)
+        protected View rBtns;
+        @BindView(R.id.accept_r)
+        protected TextView rAccept;
+        @BindView(R.id.refuse_r)
+        protected TextView rRefuse;
+        @BindView(R.id.cancel_r)
+        protected TextView rCancel;
+        @BindView(R.id.confirm_r)
+        protected TextView rConfirm;
     }
 }
